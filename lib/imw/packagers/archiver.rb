@@ -16,9 +16,16 @@ module IMW
 
       attr_accessor :name, :inputs
 
-      def initialize name, inputs
+      def initialize name, raw_inputs
         @name   = name
-        @inputs = inputs.map { |path| IMW.open(path) }
+        self.inputs = raw_inputs
+      end
+
+      def inputs= new_inputs
+        @inputs = new_inputs.map do |path|
+          input = IMW.open(path)
+          input.directory? ? input.all_contents : input
+        end.flatten
       end
 
       def errors
