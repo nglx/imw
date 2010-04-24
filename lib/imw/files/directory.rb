@@ -30,7 +30,10 @@ module IMW
       def contents
         []
       end
-      
+
+      def all_contents
+        ['**/*']
+      end
       
       # Copy the contents of this directory to +new_dir+.
       def cp new_dir
