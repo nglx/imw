@@ -18,7 +18,7 @@ module IMW
 
       def initialize name, inputs
         @name   = name
-        @inputs = inputs.map { |input| File.expand_path(input) }
+        @inputs = inputs.map { |path| IMW.open(path) }
       end
 
       def errors
@@ -56,9 +56,8 @@ module IMW
       # directory, readying them for pacakging.
       def prepare!
         FileUtils.mkdir_p dir unless File.exist?(dir)
-        inputs.each do |path|
-          existing_file = IMW.open(path)          
-          new_path      = File.join(dir, File.basename(path))
+        inputs.each do |existing_file|
+          new_path      = File.join(dir, existing_file.basename)
           case
           when existing_file.archive?
             FileUtils.cd(dir) do
@@ -75,9 +74,8 @@ module IMW
       # Checks to see if all expected files exist in the temporary
       # directory for this packager.
       def prepared?
-        inputs.each do |path|
-          existing_file = IMW.open(path)
-          new_path      = File.join(dir, File.basename(path))
+        inputs.each do |existing_file|
+          new_path      = File.join(dir, existing_file.basename)
           case
           when existing_file.archive?
             existing_file.contents.each do |archived_file_path|
