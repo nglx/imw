@@ -27,11 +27,15 @@ module IMW
       def [] selector='*'
         Dir[File.join(path, selector)] if local?
       end
+      
       def contents
-        []
+        self[]
       end
-      
-      
+
+      def du_h
+        self.contents.inject({}){|h,filename| h[filename] = IMW.open(filename).human_readable_size; h}
+      end
+
       # Copy the contents of this directory to +new_dir+.
       def cp new_dir
         raise IMW::PathError.new("cannot copy from #{path}, doesn't exist!") unless exist?

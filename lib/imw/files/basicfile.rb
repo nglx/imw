@@ -40,6 +40,21 @@ module IMW
 
       public
 
+      # Return human readable filesize
+      def human_readable_size precision=2
+        giga = 1073741824.0
+        mega = 1048576.0
+        kilo = 1024.0
+
+        case
+        when size == 1 : "1 Byte"
+        when size < kilo : "%d Bytes" % size
+        when size < mega : "%.#{precision}f KB" % (size / kilo)
+        when size < giga : "%.#{precision}f MB" % (size / mega)
+        else "%.#{precision}f GB" % (size / giga)
+        end
+      end
+
       # Is this file on the local machine (the scheme of the file's URI is nil or
       def local?
         host == 'file' || host.nil?
