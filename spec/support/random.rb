@@ -8,16 +8,18 @@ module IMWTest
     FILENAME_CHARS      = ("a".."z").to_a + ("A".."Z").to_a + ("0".."9").to_a + ["-","_",' ']
     FILENAME_MAX_LENGTH = 9
     TEXT_MAX_LENGTH     = 1024
-    EXTENSIONS          = {
-      /\.csv$/      => :csv_file,
-      /\.xml$/      => :xml_file,
-      /\.html$/     => :html_file,
-      /\.tar$/      => :tar_file,
-      /\.tar\.gz$/  => :targz_file,
-      /\.tar\.bz2$/ => :tarbz2_file,
-      /\.rar$/      => :rar_file,
-      /\.zip$/      => :zip_file
-    }
+    EXTENSIONS          = [
+                           [/\.csv$/      , :csv_file],
+                           [/\.xml$/      , :xml_file],
+                           [/\.html$/     , :html_file],
+                           [/\.tar\.gz$/  , :targz_file],
+                           [/\.tar\.bz2$/ , :tarbz2_file],
+                           [/\.bz2$/      , :bz2_file],
+                           [/\.gz$/       , :gz_file],
+                           [/\.tar$/      , :tar_file],                           
+                           [/\.rar$/      , :rar_file],
+                           [/\.zip$/      , :zip_file]
+                         ]
     EXTERNAL_PROGRAMS = if defined?(IMW) && defined?(IMW::EXTERNAL_PROGRAMS)
                           IMW::EXTERNAL_PROGRAMS
                         else
@@ -32,7 +34,6 @@ module IMWTest
       }
                         end
 
-    private
     # Return a random filename.  Optional +length+ to set the maximum
     # length of the filename returned.
     def self.basename options = {}
@@ -54,7 +55,6 @@ module IMWTest
       (1..length).map { |i| char_pool.random }.join
     end
 
-    public
     # Create a random file by matching the extension of the given
     # +filename+ or a text file if no match is found.
     def self.file filename
@@ -142,12 +142,29 @@ module IMWTest
       FileUtils.rm(tarbz2)
     end
 
+    # Create a .bz2 file at the given +filename+.
+    def self.bz2_file filename
+      text_path = File.dirname(filename) + "/fake_file"
+      text_file(text_path)
+      system("#{EXTERNAL_PROGRAMS[:bzip2]} #{text_path}")
+      FileUtils.mv(text_path + ".bz2", filename)
+    end
+
+    # Create a .gz file at the given +filename+.
+    def self.gz_file filename
+      text_path = File.dirname(filename) + "/fake_file"
+      text_file(text_path)
+      system("#{EXTERNAL_PROGRAMS[:gzip]} #{text_path}")
+      FileUtils.mv(text_path + ".gz", filename)
+    end
+    
+
     # Create a compressed rar archive at the given +filename+
     # containing random files.
     def self.rar_file filename
       tmpd = File.dirname(filename) + '/dir'
       directory_with_files(tmpd)
-      FileUtils.cd(tmpd) {|dir| system("#{EXTERNAL_PROGRAMS[:rar]} a -r -o+ file.rar *") }
+      FileUtils.cd(tmpd) {|dir| system("#{EXTERNAL_PROGRAMS[:rar]} a -o+ -inul file.rar *") }
       FileUtils.cp(tmpd + "/file.rar",filename)
       FileUtils.rm_rf(tmpd)
     end

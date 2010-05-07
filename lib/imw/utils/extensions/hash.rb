@@ -1,16 +1,3 @@
-#
-# h2. lib/imw/utils/extensions/hash.rb -- hash extensions
-#
-# == About
-#
-# Extensions to the built-in +Hash+ class.
-#
-# Author::    (Philip flip Kromer, Dhruv Bansal) for Infinite Monkeywrench Project (mailto:coders@infochimps.org)
-# Copyright:: Copyright (c) 2008 infochimps.org
-# License::   GPL 3.0
-# Website::   http://infinitemonkeywrench.org/
-#
-
 require 'active_support/core_ext/hash/reverse_merge'
 
 class Hash
@@ -169,6 +156,7 @@ class Hash
   #   search(options.slice(:mass, :velocity, :time))
   # Returns a new hash with only the given keys.
   def slice(*keys)
+    require 'set'
     allowed = Set.new(respond_to?(:convert_key) ? keys.map { |key| convert_key(key) } : keys)
     reject { |key,| !allowed.include?(key) }
   end
@@ -212,7 +200,9 @@ class Hash
     terminals.map! {|terminal| yield terminal } if block
     terminals
   end
-  
-end
 
-# puts "#{File.basename(__FILE__)}: To each improvement there corresponds another, yes?" # at bottom
+  # Dump the data from this Hash into the given +uri+.
+  def dump uri
+    IMW.open(uri).dump(self)
+  end
+end

@@ -67,11 +67,12 @@ EOF
     end
 
     def handles
+      require 'set'
       matched_handles = Set.new
       if options[:selectors].blank?
-        matched_handles += IMW::REPOSITORY.keys
+        matched_handles += IMW.repository.keys
       else
-        keys = IMW::REPOSITORY.keys
+        keys = IMW.repository.keys
         unless keys.empty?
           options[:selectors].each do |selector|
             matched_handles += keys.find_all { |key| key =~ Regexp.new(selector) }
@@ -82,7 +83,7 @@ EOF
     end
 
     def datasets
-      handles.map { |handle| IMW::REPOSITORY[handle] }
+      handles.map { |handle| IMW.repository[handle] }
     end
 
     def list!

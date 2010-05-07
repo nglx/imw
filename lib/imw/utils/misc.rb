@@ -1,10 +1,4 @@
 module IMW
-  # Return a string representing the current UTC time in the IMW
-  # format.
-  def self.current_utc_time_string
-    Time.now.utc.strftime(IMW::STRFTIME_FORMAT)
-  end
-
 
   # A simple counter.  The +value+ and +add+ methods read and
   # increment the counter's value.

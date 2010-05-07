@@ -1,16 +1,3 @@
-#
-# h2. lib/imw/utils/extensions/string.rb -- string extensions
-#
-# == About
-#
-# Implements some useful extensions to the +String+ class.
-#
-# Author::    (Philip flip Kromer, Dhruv Bansal) for Infinite Monkeywrench Project (mailto:coders@infochimps.org)
-# Copyright:: Copyright (c) 2008 infochimps.org
-# License::   GPL 3.0
-# Website::   http://infinitemonkeywrench.org/
-#
-
 class String
 
   # Does the string end with the specified +suffix+ (stolen from
@@ -44,6 +31,9 @@ class String
     self.downcase.underscore.to_sym
   end
 
-end
+  # Dump this string into the given +uri+.
+  def dump uri
+    IMW.open(uri).dump(self)
+  end
 
-# puts "#{File.basename(__FILE__)}: You tie a long string to your Monkeywrench, place it on the ground, and hide around the corner with the string in your hand, waiting for passersby to try and make a grab for it." # at bottom
+end

@@ -1,15 +1,3 @@
-#
-# h2. lib/imw/utils/extensions/array.rb -- array extensions
-#
-# == About
-#
-# Extensions to the +Array+ class.
-#
-# Author::    (Philip flip Kromer, Dhruv Bansal) for Infinite Monkeywrench Project (mailto:coders@infochimps.org)
-# Copyright:: Copyright (c) 2008 infochimps.org
-# License::   GPL 3.0
-# Website::   http://infinitemonkeywrench.org/
-#
 require 'active_support/core_ext/array/extract_options'
 class Array #:nodoc:
   include ActiveSupport::CoreExtensions::Array::ExtractOptions
@@ -118,8 +106,10 @@ class Array
     terminals.map! {|terminal| yield terminal } if block
     terminals
   end
-  
+
+  # Dump the data in this array to the resource at the given +uri+.
+  def dump uri
+    IMW.open(uri).dump(self)
+  end
 
 end
-
-# puts "#{File.basename(__FILE__)}: I have a loooong list of complaints.  Firstly, ..." # at bottom

@@ -1,17 +1,3 @@
-#
-# h2. lib/imw/utils/extensions/hpricot.rb -- extensions to hpricot
-#
-# == About
-#
-# Some IMW extensions for Why's Hpricot library.
-#
-# Author::    (Philip flip Kromer, Dhruv Bansal) for Infinite Monkeywrench Project (mailto:coders@infochimps.org)
-# Copyright:: Copyright (c) 2008 infochimps.org
-# License::   GPL 3.0
-# Website::   http://infinitemonkeywrench.org/
-#
-# puts "#{File.basename(__FILE__)}: Something clever" # at bottom
-
 require 'hpricot'
 
 module Hpricot::IMWExtensions

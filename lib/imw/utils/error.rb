@@ -1,33 +1,26 @@
-#
-# h2. lib/imw/utils/error -- errors
-#
-# == About
-#
-# Error objects for IMW.
-#
-# Author::    (Philip flip Kromer, Dhruv Bansal) for Infinite Monkeywrench Project (mailto:coders@infochimps.org)
-# Copyright:: Copyright (c) 2008 infochimps.org
-# License::   GPL 3.0
-# Website::   http://infinitemonkeywrench.org/
-#
-
 module IMW
 
-  # A generic error class.
-  class Error < StandardError
-  end
+  # Base error class which all IMW errors subclass.
+  Error = Class.new(StandardError)
 
-  class TypeError < TypeError
-  end
+  # Method undefined.
+  NoMethodError = Class.new(Error)
 
-  class ArgumentError < ArgumentError
-  end
+  # Type error.
+  TypeError = Class.new(Error)
 
-  class NotImplementedError < NotImplementedError
-  end
+  # Not implemented (typically because user needs to define a method
+  # when subclassing a base class).
+  NotImplementedError = Class.new(Error)
 
-  class ParseError < Error
-  end
+  # Error during parsing.
+  ParseError = Class.new(Error)
+
+  # Error with a non-existing, invalid, or inaccessible path.
+  PathError = Class.new(Error)
+
+  # Error communicating with a remote entity.
+  NetworkError = Class.new(Error)
 
   # An error meant to be used when a system call goes awry.  It will
   # report exit status and the process id of the offending call.
@@ -50,8 +43,5 @@ module IMW
 
   end
 
-  # A error for improperly specified, inappropriate, or broken paths.
-  class PathError < IMW::Error
-  end
 
 end

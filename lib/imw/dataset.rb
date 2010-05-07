@@ -1,206 +1,114 @@
-require 'imw/utils'
 require 'imw/dataset/workflow'
 require 'imw/dataset/paths'
 
 module IMW
 
-  # The IMW::Dataset class is useful organizing a complex data
-  # transformation because it is capable of managing a collection of
-  # paths and the interdependencies between subparts of the
-  # transformation.
+  # The IMW::Dataset represents a common object in which paths, data
+  # resources, and various tasks can be intermingled to define a
+  # complex transformation of data.
   #
-  # == Manipulating Paths
+  # == Organizing Paths
   #
-  # Storing paths makes code shorter and more readable.  By default
-  # (this assumes the executing script is in a file
-  # /home/imw_user/data/foo.rb):
+  # IMW encourages you to work within the following directory
+  # structure for a dataset +my_dataset+:
   #
-  #   dataset = IMW::Dataset.new
-  #   dataset.path_to(:self)
-  #   #=> '/home/imw_user/data'
-  #   dataset.path_to(:ripd)
-  #   #=> '/home/imw_user/data/ripd'
-  #   dataset.path_to(:pkgd, 'final.tar.gz')
-  #   #=> '/home/imw_user/data/pkgd/final.tar.gz'
+  #   my_dataset/
+  #   |-- my_dataset.rb
+  #   |-- ripd
+  #   |   `-- ...
+  #   |-- rawd
+  #   |   `-- ...
+  #   |-- fixd
+  #   |   `-- ...
+  #   `-- pkgd
+  #       `-- ...
   #
-  # Paths can be added
+  # Just like IMW itself, a dataset can manage a collection of paths.
+  # If <tt>my_dataset.rb</tt> defines a dataset:
   #
-  #   dataset.add_path(:sorted_output, :mungd, 'sorted-file-3923.txt')
-  #   dataset.path_to(:sorted_output)
-  #   #=> '/home/imw_user/data/mungd/sorted-file-3923.txt'
+  #   # my_dataset/my_dataset.rb
+  #   dataset = IMW::Dataset.new(:my_dataset)
   #
-  # as well as removed (via +remove_path+).
+  # then the following paths will be defined:
   #
-  # == Defining Workflows
+  #   dataset.path_to(:root)   #=> my_dataset
+  #   dataset.path_to(:script) #=> my_dataset/my_dataset.rb
+  #   dataset.path_to(:ripd)   #=> my_dataset/ripd
+  #   dataset.path_to(:rawd)   #=> my_dataset/rawd
+  #   dataset.path_to(:fixd)   #=> my_dataset/fixd
+  #   dataset.path_to(:pkgd)   #=> my_dataset/pkgd
   #
-  # IMW encourages you to think of transforming data as a network of
-  # interdependent steps (see IMW::Workflow).  Each of IMW's five
-  # default steps maps to a named directory remembered by each
-  # dataset.
+  # Just like IMW itself, the +dataset+ supports adding path
+  # references
   #
-  # The following example shows why this is a useful abstraction as
-  # well as illustrating some of the other functionality in IMW.
+  #   dataset.add_path(:raw_data, :ripd, 'raw_data.xml')
+  #   dataset.path_to(:raw_data) #=> my_dataset/ripd/raw_data.xml
   #
-  # == Example Dataset
+  # as well as removed (via <tt>dataset.remove_path</tt>)).
   #
-  # The first step is to import IMW and create the dataset
+  # A subclass of IMW::Dataset can customize these paths be overriding
+  # IMW::Dataset#set_default_paths as well as define new ones by
+  # overriding IMW::Dataset#set_paths.
   #
-  #   require 'rubygems'
-  #   require 'imw'
-  #   dataset = IMW::Dataset.new
+  # Setting paths can be skipped altogether by passing the
+  # <tt>:skip_paths</tt> option when instantiating a dataset:
   #
-  # You can pass in a handle (the name or "slug" for the dataset) as
-  # well as some options.  Now define the steps you intend to take to
-  # complete the transformation:
+  #   dataset = IMW::Dataset.new :my_dataset, :skip_paths => true
   #
-  # rip::
-  #   Data is collected from a source (+http+, +ftp+, database, &c.)
-  #   and deposited in the <tt>:ripd</tt> directory of this dataset.
+  # == Utilizing Tasks
   #
-  #     dataset.task :rip do
-  #       IMW.open('http://econ.chimpu.edu/datasets/produce_prices.tar.bz2').cp_to_dir(dataset.path_to(:ripd))
-  #         #=> [ripd]/http/econ_chimpu_edu/datasets/produce_prices.tar.bz2
-  #         
-  #       IMW::Rip.from_database :named  => "weather_records",
-  #                              :at     => "public.astro.chimpu.edu",
-  #                              :select => "* FROM hurricane_frequency"
-  #         #=> [ripd]/sql/_edu/chimpu_astro_public/weather_records/select_from_hurricane_frequency-2009-02-16--15:30:26.tsv
-  #     end
+  # An IMW::Dataset utilizes Rake to manage tasks needed to transform
+  # data.  See IMW::Workflow for a description of the pre-defined
+  # tasks (+rip+, +parse+, +fix+, +package+).
   #
-  #   Where <tt>[ripd]</tt> would be replaced by the IMW
-  #   <tt>:ripd</tt> directory.  The default <tt>:rip</tt> task is
-  #   empty so If there's no need to rip data (perhaps it's already on
-  #   disk?) then nothing needs to be done here.
-  #   
-  # raw::
-  #   Managed by the <tt>:raw</tt> task, data is uncompressed and
-  #   extracted (if necessary) and stored in a subdirectory of the
-  #   <tt>:data</tt> directory named by the taxon and handle of this
-  #   dataset.
+  # New tasks can be defined
   #
-  #     dataset.task :raw do
-  #       IMW::Raw.uncompress_and_extract File.join(dataset.path_to(:ripd),'http/_edu/chimpu_econ/datasets'),
-  #                                       Dir[File.join(dataset.path_to(:ripd),'sql/_edu/chimpu_astro_public/**/*.tsv')].first
-  #       #=> [data]/economics/alarming_trends/recent_history_of_banana_prices/rawd/001.xml
-  #           [data]/economics/alarming_trends/recent_history_of_banana_prices/rawd/002.xml
-  #           [data]/economics/alarming_trends/recent_history_of_banana_prices/rawd/003.xml
-  #           ...
-  #           [data]/economics/alarming_trends/recent_history_of_banana_prices/rawd/select_from_hurricane_frequency-2009-02-16--15:30:26.tsv
-  #     end
-  #
-  #   Where <tt>[data]</tt> would be replaced by the IMW
-  #   <tt>:data</tt> directory.
-  #
-  #   If this dataset didn't have a taxon
-  #   (economics/alarming_trends) its files would be stored in a
-  #   directory +recent_history_of_banana_prices+ just below the
-  #   <tt>:data</tt> directory.
-  #
-  # fix::
-  #   Managed by the <tt>:fix</tt> task, transformations on the data
-  #   are performed.  IMW's method is to read data from a source
-  #   format (XML, YAML, CSV, &c.) into Ruby objects with hash
-  #   semantics.  These objects might be based upon structs,
-  #   ActiveRecord, DataMapper::Resource, FasterCSV...anything which
-  #   can be accessed as <tt>thing.property</tt> (FIXME 'and' or 'or'
-  #   ) <tt>thing[:property]</tt>: the Infinite Monkeywrench fits
-  #   neatly into your toobox.
-  #
-  #
-  #     # Open an output file in XML for writing
-  #     output = IMW.open! File.join(dataset.path_to(:fixd), 'date_bananas_hurricanes.csv')
-  #       #=> FasterCSV at [fixd]/economics/alarming_trends/recent_history_of_banana_prices/fixd/data_bananas_hurricanes.csv
-  #
-  #     # A place to store the combined data
-  #     correlations = []
-  #
-  #     dataset.task :fix do
-  #
-  #       # Return the contents of the weather data which has rows like
-  #       # 
-  #       #   1    2008-09-01    4
-  #       #   2    2008-09-08    3
-  #       #   3    2008-08-15    3
-  #       #   ...  
-  #       # 
-  #       weather_data = IMW.open(Dir[File.join(dataset.path_to(:rawd), '*.tsv')].first,
-  #                               :headers => ["ID","DATE","NUM_HURRICANES"]).entries
-  #         #=> [#<FasterCSV::Row "ID":nil "DATE":Mon Sep 08 04:15:47 -0600 2008,"NUM_HURRICANES":4>, ... ]
-  #
-  #
-  #       # Return the matching data from the produce prices XML file which looks like
-  #       # 
-  #       #  <prices>
-  #       #    <price type="apple">
-  #       #      <date>2008/09/01</date>
-  #       #      <amount>0.15</amount>
-  #       #    </price>
-  #       #    <price type="banana">
-  #       #      <date>2008/09/01</date>
-  #       #      <amount>0.20</amount>
-  #       #    </price>
-  #       #    ...
-  #       #  </prices>
-  #       parser = IMW::XMLParser.new :records => [ 'prices/price[@type="banana"]',
-  #                                                 { :week  => 'date',
-  #                                                   :price => 'amount' }]
-  #
-  #       # Loop through the XML produce prices, mixing in the hurricane data,
-  #       # and outputting new rows.
-  #       Dir["#{dataset.path_to :rawd}*.xml"] each do |file|
-  #         IMW.open file do |xml| #=> Hpricot::Doc
-  #           parser.parse(xml).each do |record|
-  #             num_hurricanes = weather_data.(lambda { nil }) {|id,week,num_hurricanes| week == record.week}
-  #             output << [week,record[:price],num_hurricanes]
-  #           end
-  #         end
-  #       end
-  #     end
-  #
-  # package::
-  #   Data is packaged and compressed (if necessary) into a delivery
-  #   format and deposited into the <tt>:pkgd</tt> directory.
-  #
-  #   dataset.task :pkg do
-  #     IMW.open(File.join(dataset.path_to(:fixd), 'date_bananas_hurricanes.csv')).compress!
-  #       #=> [data]/economics/alarming_trends/recent_history_of_banana_prices/pkgd/date_bananas_hurricanes.csv.bz2
+  #   dataset.task :get_authorization do
+  #     # ... get an authorization token
   #   end
   #
-  # In the above, <tt>dataset.task</tt> behaves like
-  # <tt>Rake.task</tt>, merely defining a task and its dependencies
-  # without executing it via
+  # and hooked into the default tasks in the usual Rake manner
   #
-  #   dataset.task(:pkg).invoke
+  #   dataset.task :rip => [:get_authorization]
   #
-  # Since the <tt>:rip</tt>, <tt>:raw</tt>, <tt>:fix</tt>, and
-  # <tt>:pkg</tt> tasks depend upon each other, invoking <tt>:pkg</tt>
-  # will first cause <tt>:rip</tt> to run.
+  # A dataset also has methods for the workflow step tasks to make
+  # this easier
   #
-  # By default, the tasks associated with a dataset are blank.  All of
-  # IMW's functionality is available without defining tasks.  Tasks
-  # simply provide a convenient scaffold for building a data
-  # transformation upon.
+  #   dataset.rip [:get_authorized]
   #
-  # Similarly, there is no requirement to use the directory structure
-  # outlined above.  IMW's methods accept plain filenames and do the
-  # Right Thing where possible.  The combination of tasks with
-  # matching directory structure is a suggested but not mandatory
-  # framework in which to program.
+  # Tasks for a dataset can be accessed and invoked as follows
+  #
+  #   dataset[:rip].invoke
+  #
+  # as well as by using the command line +imw+ tool.
+  #
+  # Defining tasks can be skipped altogether by passing the
+  # <tt>:skip_workflow</tt> option when instantiating a dataset
+  #
+  #   dataset = IMW::Dataset.new :my_dataset, :skip_workflow => true
+  #
+  # == Working with Repositories
+  #
+  # A dataset can be added to a repository by passing the
+  # <tt>:repository</tt> option
+  #
+  #   repo    = IMW::Repository.new
+  #   dataset = IMW::Dataset.new :my_dataset, :repository => repo
   class Dataset
 
-    # The <tt>IMW::Workflow</tt> module contains pre-defined tasks for
-    # dataset processing.
     include IMW::Workflow
 
-    attr_accessor :handle, :options, :data
+    attr_accessor :handle, :options
 
-    def initialize options = {}
+    def initialize handle, options = {}
       @options = options
-      @handle  = options[:handle]
-      initialize_workflow
-      set_root_paths
-      set_paths
-      set_tasks
+      @handle  = handle
+      set_default_paths   unless options[:skip_paths]
+      set_paths           unless options[:skip_paths]
+      initialize_workflow unless options[:skip_workflow]
+      if options[:repository]
+        options[:repository][handle] = self
+      end
     end
 
   end
