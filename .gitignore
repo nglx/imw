@@ -14,3 +14,4 @@ tmp/*
 pkg/*
 *gemspec
 tags
+.yardoc/*
