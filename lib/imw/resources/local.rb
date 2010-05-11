@@ -23,6 +23,37 @@ module IMW
         end
       end
       alias_method :exists?, :exist?
+
+      # Return the path to this local object.
+      #
+      # @return [String]
+      def path
+        @path ||= File.expand_path(@encoded_uri ? Addressable::URI.decode(uri.to_s) : uri.to_s)
+      end
+
+      # Is this file on the local machine?
+      #
+      # @return [true, false]
+      def is_local?
+        true
+      end
+
+      # Copy this resource to the +new_uri+.
+      #
+      # @param [String, IMW::Resource] new_uri
+      # @return [IMW::Resource] the new resource
+      def cp new_uri
+        IMW::Transforms::Transferer.new(:cp, self, new_uri).transfer!
+      end
+
+      # Move this resource to the +new_uri+.
+      #
+      # @param [String, IMW::Resource] new_uri
+      # @return [IMW::Resource] the new resource
+      def mv new_uri
+        IMW::Transforms::Transferer.new(:mv, self, new_uri).transfer!
+      end
+      
     end
 
     # Defines methods for appropriate for a local file.
@@ -34,51 +65,6 @@ module IMW
         FileUtils.rm path
       end
       alias_method :rm!, :rm
-
-      # Copy this resource to +new_path+.
-      #
-      # @param [String] new_path the path to copy the resource to
-      # @return [IMW::Resource] the new resource
-      def cp new_path
-        should_exist!("Cannot copy")
-        FileUtils.cp path, IMW.local_path(new_path)
-        IMW.open(new_path)
-      end
-
-      # Copy this resource to +dir+.
-      #
-      # @param [String, IMW::Resource] dir the directory to copy the resource to
-      # @return [IMW::Resource] the new resource
-      def cp_to_dir dir
-        cp File.join(IMW.local_path(dir),basename)
-      end
-
-      # Move this resource to +new_path+.
-      #
-      # @param [String] new_path the new path to move the resource to
-      # @return [IMW::Resource] the new resource
-      def mv new_path
-        should_exist!("Cannot move")
-        FileUtils.mv path, IMW.local_path(new_path)
-        IMW.open(new_path)
-      end
-      alias_method :mv!, :mv
-
-      # Move this file to +dir+.
-      #
-      # @param [String, IMW::Resource] dir the directory to move this resource to
-      # @return [IMW::Resource] the new resource
-      def mv_to_dir dir
-        mv File.join(IMW.local_path(dir),basename)
-      end
-      alias_method :mv_to_dir!, :mv_to_dir
-
-      # Raise an error if this resource doesn't exist.
-      #
-      # @param [String] message an optional message to include
-      def should_exist! message=nil
-        raise IMW::PathError.new([message, "#{path} does not exist"].compact.join(', ')) unless exist?
-      end
 
       # Return the IO object at this path.
       #
@@ -137,27 +123,6 @@ module IMW
         io.close unless options[:persist]
       end
 
-      # Is this file an archive?
-      #
-      # @return [false]
-      def archive?
-        false
-      end
-
-      # Is this file compressed?
-      #
-      # @return [false]
-      def compressed?
-        false
-      end
-
-      # Is this file compressible?
-      #
-      # @return [true]
-      def compressible?
-        true
-      end
-
     end
 
 
@@ -177,54 +142,6 @@ module IMW
       def rm_rf
         FileUtils.rm_rf path
         self
-      end
-
-      # Copy this local directory to +new_path+.
-      #
-      # @param [String, IMW::Resource] new_path
-      # @return [IMW::Resource] the new directory
-      def cp new_path
-        new_path = IMW.local_path(new_path)
-        FileUtils.cp_r path, new_path
-        if File.exist?(new_path) && File.directory?(new_path)
-          # path was copied beneath new_path
-          IMW.open(File.join(new_path, basename))
-        else
-          IMW.open(new_path)
-        end
-      end
-
-      # Copy this local directory to a directory of the same name
-      # below +dir+
-      #
-      # @param [String, IMW::Resource] dir
-      # @return [IMW::Resource] the new directory
-      def cp_to_dir dir
-        cp dir
-      end
-
-      # Move this local directory to the +new_path+.
-      #
-      # @param [String, IMW::Resource] new_path
-      # @return [IMW::Resource] the new directory
-      def mv new_path
-        new_path = IMW.local_path(new_path)
-        FileUtils.mv path, new_path
-        if File.exist?(new_path) && File.directory?(new_path)
-          # path was copied beneath new_path
-          IMW.open(File.join(new_path, basename))
-        else
-          IMW.open(new_path)
-        end
-      end
-
-      # Move this local directory to a directory of the same name
-      # below +dir+.
-      #
-      # @param [String, IMW::Resource] dir
-      # @return [IMW::Resource] the new directory
-      def mv_to_dir dir
-        mv dir
       end
 
       # Return a list of paths relative to this directory which match

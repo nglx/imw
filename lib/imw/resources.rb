@@ -30,6 +30,8 @@ module IMW
 
     autoload :LocalObj,        'imw/resources/local'
     autoload :RemoteObj,       'imw/resources/remote'
+    autoload :StringObj,       'imw/resources/string'
+    autoload :Transferable,    'imw/resources/transferable'
 
     # Iterate through IMW::Resources#handlers and extend the given
     # +resource+ with modules whose handler conditions match the
@@ -50,12 +52,13 @@ module IMW
       resource
     end
 
-    # Basic handlers which augment the resource with methods based on
-    # whether it's local or remote.
-    LOCAL_AND_REMOTE_HANDLERS = [
-                                 ["LocalObj",  Proc.new { |resource| resource.local?  } ],
-                                 ["RemoteObj", Proc.new { |resource| resource.remote? } ]
-                                ]
+    # Basic handlers to determine whether the resource is local,
+    # remote, or a string.
+    BASIC_HANDLERS = [
+                      ["LocalObj",  Proc.new { |resource| resource.scheme == 'file' || resource.scheme.blank?   } ],
+                      ["RemoteObj", Proc.new { |resource| resource.scheme != 'file' && resource.scheme.present? } ],
+                      ["StringObj", Proc.new { |resource| resource.is_stringio?                                 } ]
+                     ]
 
     # Define this constant in your configuration file to add your own
     # handlers.
@@ -71,7 +74,7 @@ module IMW
     # @return [Array]
     def self.handlers
       # order here is important
-      LOCAL_AND_REMOTE_HANDLERS + ARCHIVE_AND_COMPRESSED_HANDLERS + FORMAT_HANDLERS + SCHEME_HANDLERS + USER_DEFINED_HANDLERS
+      BASIC_HANDLERS + SCHEME_HANDLERS + ARCHIVE_AND_COMPRESSED_HANDLERS + FORMAT_HANDLERS + USER_DEFINED_HANDLERS
     end
 
     protected

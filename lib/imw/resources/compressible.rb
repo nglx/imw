@@ -19,13 +19,22 @@ module IMW
     # +compression_settings+ hash.
     module Compressible
 
+      # Compression settings.
       attr_accessor :compression_settings
 
-      # Defines teh compression settings used for this resource. <tt>:program</tt>
-      # defines the name of the command-line program to use,
-      # <tt>:compress</tt> gives the flags to use when compressing, and
-      # <tt>:extension</tt> gives the extension (_without_ the `.') added
-      # by the program after compressing.
+      # Is this file compressible?
+      #
+      # @return [true]
+      def is_compressible?
+        true
+      end
+      
+      # Defines the compression settings used for this
+      # resource. <tt>:program</tt> defines the name of the
+      # command-line program to use, <tt>:compress</tt> gives the
+      # flags to use when compressing, and <tt>:extension</tt> gives
+      # the extension (_without_ the `.') added by the program after
+      # compressing.
       #
       # @return [Hash]
       def compression_settings
@@ -40,7 +49,7 @@ module IMW
       # @return [IMW::Resource] the compressed file
       def compress!
         should_exist!("Cannot compress.")
-        IMW.system(*[compression_settings[:program], compression_settings[:compress], path].compact)
+        IMW.system(*[compression_settings[:program], compression_settings[:compress], path])
         IMW.open(File.join(dirname,basename + "." + compression_settings[:extension]))
       end
 
@@ -54,7 +63,7 @@ module IMW
         should_exist!("Cannot compress.")
         begin
           copy = cp(path + '.imw_copy')
-          compressed_file = compress!(options)
+          compressed_file = compress!
           copy.mv(path)
           compressed_file
         ensure

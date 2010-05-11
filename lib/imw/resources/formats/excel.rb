@@ -1,6 +1,8 @@
 module IMW
   module Resources
     module Formats
+
+      # Defines methods for reading and writing Microsoft Excel data.
       module Excel
 
         attr_accessor :book, :sheet

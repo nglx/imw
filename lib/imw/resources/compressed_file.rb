@@ -19,14 +19,14 @@ module IMW
       # Is this file compressed?
       #
       # @return [true, false]
-      def compressed?
+      def is_compressed?
         true
       end
 
       # Can this file be compressed?
       #
       # @return [true, false]
-      def compressible?
+      def is_compressible?
         false
       end
 

@@ -13,7 +13,7 @@ module IMW
   # IMW::SystemCallError if the command fails as well as printing the
   # command appended to the end of <tt>error_message</tt>.
   def self.system *commands
-    Kernel.system(*commands.map(&:to_s))
+    Kernel.system(*commands.map { |command| command.to_s unless command.blank? }.compact)
     raise IMW::SystemCallError.new($?.dup, commands.join(' ')) unless $?.success?
   end
 end

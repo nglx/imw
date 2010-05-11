@@ -13,6 +13,10 @@ describe IMW::Resources::LocalObj do
     @dir.should_not_receive(:extend).with(IMW::Resources::LocalFile)
     @dir.extend_appropriately!
   end
+
+  it "should correctly resolve relative paths" do
+    IMW.open('foobar').dirname.should == IMWTest::TMP_DIR
+  end
 end
 
 describe IMW::Resources::LocalFile do

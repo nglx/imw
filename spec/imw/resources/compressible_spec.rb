@@ -8,8 +8,8 @@ describe IMW::Resources::Compressible do
   end
 
   it "should extend a local resource " do
-    @resource.compressible?.should be_true
-    @resource.compressed?.should   be_false
+    @resource.is_compressible?.should be_true
+    @resource.is_compressed?.should   be_false
   end
 
   it "can compress a resource in place" do
@@ -19,8 +19,8 @@ describe IMW::Resources::Compressible do
     compressed_file.exist?.should        be_true
     @resource.exist?.should              be_false
     
-    compressed_file.compressed?.should   be_true
-    compressed_file.compressible?.should be_false
+    compressed_file.is_compressed?.should   be_true
+    compressed_file.is_compressible?.should be_false
   end
 
   it "can compress a resource without overwriting the original file" do
@@ -30,7 +30,7 @@ describe IMW::Resources::Compressible do
     compressed_file.exist?.should        be_true
     @resource.exist?.should              be_true
     
-    compressed_file.compressed?.should   be_true
-    compressed_file.compressible?.should be_false
+    compressed_file.is_compressed?.should   be_true
+    compressed_file.is_compressible?.should be_false
   end
 end

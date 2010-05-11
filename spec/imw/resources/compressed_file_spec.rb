@@ -25,24 +25,24 @@ share_examples_for "a compressed file" do
   end
 
   it "should know that it is compressed" do
-    @compressed_file.compressed?.should   be_true
-    @compressed_file.compressible?.should be_false
+    @compressed_file.is_compressed?.should   be_true
+    @compressed_file.is_compressible?.should be_false
   end
 
   it "can decompress the file in place" do
     uncompressed_file = @compressed_file.decompress!
     @compressed_file.exist?.should  be_false
     uncompressed_file.exist?.should be_true
-    uncompressed_file.compressed?.should be_false
-    uncompressed_file.compressible?.should be_true
+    uncompressed_file.is_compressed?.should be_false
+    uncompressed_file.is_compressible?.should be_true
   end
 
   it "can decompress the file without deleting the original file" do
     uncompressed_file = @compressed_file.decompress
     @compressed_file.exist?.should  be_true
     uncompressed_file.exist?.should be_true
-    uncompressed_file.compressed?.should be_false
-    uncompressed_file.compressible?.should be_true
+    uncompressed_file.is_compressed?.should be_false
+    uncompressed_file.is_compressible?.should be_true
   end
   
 end

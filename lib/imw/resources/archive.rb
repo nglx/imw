@@ -22,7 +22,7 @@ module IMW
       # Is this file an archive?
       #
       # @return [true, false]
-      def archive?
+      def is_archive?
         true
       end
 

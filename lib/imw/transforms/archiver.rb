@@ -77,7 +77,7 @@ module IMW
         @local_inputs, @remote_inputs = [], []
         new_inputs.each do |obj|
           input = obj.is_a?(IMW::Resource) ? obj : IMW.open(obj)  # take either paths/URIs or IMW::Resource objects
-          if input.local?
+          if input.is_local?
             @local_inputs << (input.directory? ? input.resources : input)  # recurse through directories
           else
             @remote_inputs << input
@@ -132,11 +132,11 @@ module IMW
         local_inputs.each do |existing_file|
           new_path      = File.join(dir, existing_file.basename)
           case
-          when existing_file.archive?
+          when existing_file.is_archive?
             FileUtils.cd(dir) do
               existing_file.extract
             end
-          when existing_file.compressed?
+          when existing_file.is_compressed?
             existing_file.cp(new_path).decompress!
           else
             existing_file.cp(new_path)
@@ -155,11 +155,11 @@ module IMW
       def prepared?
         local_inputs.each do |existing_file|
           case
-          when existing_file.archive?
+          when existing_file.is_archive?
             existing_file.contents.each do |archived_file_path|
               return false unless File.exist?(File.join(dir, archived_file_path))
             end
-          when existing_file.compressed?
+          when existing_file.is_compressed?
             return false unless File.exist?(File.join(dir, existing_file.decompressed_basename))
           else
             return false unless File.exist?(File.join(dir, existing_file.basename))

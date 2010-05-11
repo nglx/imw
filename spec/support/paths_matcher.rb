@@ -24,7 +24,7 @@ module Spec
         def failure_message
           given_string    = given_contents.to_a.join("\n\t")
           to_match_string = to_match_contents.to_a.join("\n\t")          
-          "expected contents to be identical.\n\ngiven #{given}:\n\t#{given_string}\n\nto match #{to_match}:\n\t#{to_match_string}"
+          "expected contents to be identical.\n\ngiven #{given.inspect}:\n\t#{given_string}\n\nto match #{to_match}:\n\t#{to_match_string}"
         end
 
         def negative_failure_message

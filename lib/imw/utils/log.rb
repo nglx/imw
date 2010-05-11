@@ -1,16 +1,16 @@
 require 'logger'
 
 module IMW
+
+  # Default log file.
   LOG_FILE_DESTINATION = STDERR             unless defined?(LOG_FILE_DESTINATION)
+  
   LOG_TIMEFORMAT       = "%Y%m%d-%H:%M:%S " unless defined?(LOG_TIMEFORMAT)
 
   class << self; attr_accessor :log end
-  #
-  # Create a Logger and point it at LOG_FILE_DESTINATION
-  #
-  # LOG_FILE_DESTINATION is STDOUT by default; redefine it in your
-  # ~/.imwrc, or set IMW.log yourself, if that's not cool.
-  #
+  
+  # Create a Logger and point it at IMW::LOG_FILE_DESTINATION which is
+  # set in ~/.imwrc and defaults to STDERR.
   def self.instantiate_logger!
     IMW.log ||= Logger.new(LOG_FILE_DESTINATION)
     IMW.log.datetime_format = "%Y%m%d-%H:%M:%S "
@@ -18,15 +18,19 @@ module IMW
   end
 
   def announce *events
-    options = events.extract_options!
+    options = events.flatten.extract_options!
     options.reverse_merge! :level => Logger::INFO
-    # puts [options, events ].inspect, "*"*76
     IMW.log.add options[:level], events.join("\n")
   end
   def banner *events
-    options = events.extract_options!
+    options = events.flatten.extract_options!
     options.reverse_merge! :level => Logger::INFO
-    ["*"*75, events, "*"*75].flatten.each{|ev| announce(ev, options) }
+    announce(["*"*75, events, "*"*75], options)
+  end
+  def warn *events
+    options = events.flatten.extract_options!
+    options.reverse_merge! :level => Logger::WARN
+    announce events, options
   end
 
   PROGRESS_TRACKERS = {}
@@ -61,7 +65,4 @@ module IMW
   end
 end
 
-#
-# Make the default logger
-#
 IMW.instantiate_logger!

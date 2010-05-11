@@ -1,3 +1,4 @@
+require 'ostruct'
 require 'addressable/uri'
 require 'imw/resources'
 
@@ -41,11 +42,12 @@ module IMW
   #
   # Read the documentation for modules in IMW::Resources to learn more
   # about the various behaviors an IMW::Resource can acquire.
-  class Resource
+  class Resource < OpenStruct
 
     attr_reader :uri, :mode
     
     def initialize uri, options={}
+      super()
       self.uri = uri
       @mode    = options[:mode] || 'r'
       extend_appropriately! unless options[:skip_modules]
@@ -95,30 +97,6 @@ module IMW
       @scheme ||= uri.scheme
     end
 
-    # The host of this resource.  Will be +nil+ for local resources.
-    #
-    # @return [String]
-    def host
-      @host ||= uri.host
-    end
-
-    # The path of this resource.  For remote resources this is the
-    # part past the host.
-    #
-    # @return [String]
-    def path
-      return @path if @path
-      if local?
-        @path = File.expand_path(uri.path)
-        @path += "?#{uri.query}"           unless uri.query.blank?
-        @path += "##{uri.fragment}"        unless uri.fragment.blank?
-        @path = Addressable::URI.decode(s) if @encoded_uri
-        @path
-      else
-        @path = uri.path
-      end
-    end
-
     # The directory name of this resource's path.
     #
     # @return [String]
@@ -158,42 +136,54 @@ module IMW
       @name ||= extname ? basename[0,basename.length - extname.length] : basename
     end
 
-    # Return the query string part of this resource's URI.  Will
-    # likely be +nil+ for local resources.
-    #
-    # @return [String]
-    def query_string
-      @query_string ||= uri.query
-    end
-
-    # Return the fragment part of this resource's URI.  Will likely be
-    # +nil+ for local resources.
-    #
-    # @return [String]
-    def fragment
-      @fragment ||= uri.fragment
-    end
-    
-    # Is this file on the local machine?
-    #
-    # @return [true, false]
-    def local?
-      scheme == 'file' || scheme.nil?
-    end
-
-    # Is this file on a remote machine?
-    #
-    # @return [true, false]
-    def remote?
-      (! local?)
-    end
-
     def to_s
       uri.to_s
     end
 
-    def method_missing method, *args
-      raise IMW::NoMethodError.new("undefined method `#{method}' for #{self.class} extended by #{resource_modules.map(&:to_s).join(', ')}")
+    # Raise an error unless this resource exists.
+    #
+    # @param [String] message an optional message to include
+    def should_exist!(message=nil)
+      raise IMW::Error.new([message, "No path defined for #{self.inspect} extended by #{resource_modules.join(' ')}"].compact.join(', '))          unless respond_to?(:path)
+      raise IMW::Error.new([message, "No exist? method defined for #{self.inspect} extended by #{resource_modules.join(' ')}"].compact.join(', ')) unless respond_to?(:exist?)
+      raise IMW::PathError.new([message, "#{path} does not exist"].compact.join(', '))                                                             unless exist?
+    end
+
+    # Open a copy of this resource.
+    #
+    # This is useful when wanting to reset file handles.  Though -- be
+    # warned -- it does not close any file handles itself...
+    #
+    # @return [IMW::Resource] the new (old) resource
+    def reopen
+      IMW.open(self.uri.to_s)
+    end
+
+    # If +method+ is a query (ends with a question mark) then return
+    # the value of the open struct member with the question mark
+    # removed
+    #
+    #   r = IMW::Resource.new
+    #   r.some_method?
+    #   => nil
+    #   r.some_method = true
+    #   r.some_method?
+    #   => true
+    def method_missing mid, *args
+      mname = mid.id2name
+      len = args.length
+      if mname.chomp!('=')
+        if len != 1
+          raise ArgumentError, "wrong number of arguments (#{len} for 1)", caller(1)
+        end
+        modifiable[new_ostruct_member(mname)] = args[0]
+      elsif len == 0 && mname =~ /^(.*)\?$/
+        @table[$1.to_sym]
+      elsif len == 0
+        @table[mid]
+      else
+        raise NoMethodError, "undefined method `#{mname}' for #{self}, extended by #{resource_modules.join(', ')}", caller(1)
+      end
     end
   end
 end

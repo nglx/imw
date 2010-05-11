@@ -22,6 +22,9 @@ module IMW
   # Error communicating with a remote entity.
   NetworkError = Class.new(Error)
 
+  # Error communicating with a remote entity.
+  ArgumentError = Class.new(Error)
+
   # An error meant to be used when a system call goes awry.  It will
   # report exit status and the process id of the offending call.
   class SystemCallError < IMW::Error

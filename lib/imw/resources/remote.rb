@@ -13,30 +13,48 @@ module IMW
         obj.extend(RemoteFile)
       end
 
-      
+      # Is this resource on a remote host?
+      #
+      # @return [true,false]
+      def is_remote?
+        true
+      end
+
+      # The host of this resource.
+      #
+      # @return [String]
+      def host
+        @host ||= uri.host
+      end
+
+      # Return the query string part of this resource's URI.  Will
+      # likely be +nil+ for local resources.
+      #
+      # @return [String]
+      def query_string
+        @query_string ||= uri.query
+      end
+
+      # Return the fragment part of this resource's URI.  Will likely be
+      # +nil+ for local resources.
+      #
+      # @return [String]
+      def fragment
+        @fragment ||= uri.fragment
+      end
+
+      # Return the path part of this resource's URI.  Will _not_
+      # include the +query_string+ or +fragment+.
+      #
+      # @return [String]
+      def path
+        @path ||= uri.path
+      end
+
     end
     
     module RemoteFile
 
-      # Copy the remote resource to the +local_path+.
-      #
-      # @param [String, IMW::Resource] local_path
-      # @return [IMW::Resource] the local file
-      def cp local_path
-        returning(IMW.open(IMW.local_path(local_path))) do |local_obj|
-          File.open(local_obj.path, 'w') { |f| f.write(read) }
-        end
-      end
-
-      # Copy the remote resource to a local file in +dir+ with the
-      # same basename as the resource.
-      #
-      # @param [String, IMW::Resource] dir
-      # @return [IMW::Resource]
-      def cp_to_dir dir
-        cp(File.join(IMW.local_path(dir), effective_basename))
-      end
-      
       # Return the IO object for this remote file.
       #
       # The mode of this resource is ignored.
