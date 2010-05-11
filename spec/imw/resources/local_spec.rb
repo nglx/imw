@@ -25,66 +25,33 @@ describe IMW::Resources::LocalFile do
     @file = IMW::Resource.new('original.txt')
   end
 
-  describe "on the filesystem" do
+  it "can delete the file" do
+    @file.rm
+    @file.exist?.should be_false
+  end
 
-    it "can copy the file" do
-      copy = @file.cp('copy.txt')
-      @file.exist?.should be_true
-      copy.exist?.should  be_true
-    end
 
-    it "can move the file" do
-      copy = @file.mv('copy.txt')
-      @file.exist?.should be_false
-      copy.exist?.should  be_true
-    end
+  it "can read a file" do
+    @file.read.size.should > 0
+  end
 
-    it "can delete the file" do
-      @file.rm
-      @file.exist?.should be_false
-    end
+  it "can load the lines of a file" do
+    data = @file.load
+    data.size.should > 0
+    data.class.should == Array
+  end
 
-    before do
-      FileUtils.mkdir_p('subdir')
-    end
-
-    it "can copy to a directory" do
-      @file.cp_to_dir('subdir')
-      @file.exist?.should be_true
-      IMW::Resource.new('subdir').contains?(@file.basename).should be_true
-    end
-
-    it "can move to a directory" do
-      @file.mv_to_dir('subdir')
-      @file.exist?.should be_false
-      IMW::Resource.new('subdir').contains?(@file.basename).should be_true
+  it "can iterate over the lines of a file" do
+    @file.load do |line|
+      line.class.should == String
+      break
     end
   end
 
-  describe "with a file" do
-
-    it "can read a remote file" do
-      @file.read.size.should > 0
-    end
-
-    it "can load the lines of a remote file" do
-      data = @file.load
-      data.size.should > 0
-      data.class.should == Array
-    end
-
-    it "can iterate over the lines of a remote file" do
-      @file.load do |line|
-        line.class.should == String
-        break
-      end
-    end
-
-    it "can map the lines of a remote file" do
-      @file.map do |line|
-        line[0..5]
-      end.class.should == Array
-    end
+  it "can map the lines of a file" do
+    @file.map do |line|
+      line[0..5]
+    end.class.should == Array
   end
 end
 
@@ -102,20 +69,6 @@ describe IMW::Resources::LocalDirectory do
     @dir = IMW::Resource.new('dir')
   end
 
-  it "can copy the directory" do
-    FileUtils.mkdir('copy')
-    copy = @dir.cp('copy')
-    @dir.exist?.should be_true
-    copy.exist?.should be_true
-  end
-
-  it "can move the directory" do
-    FileUtils.mkdir('copy')
-    copy = @dir.mv('copy')
-    @dir.exist?.should be_false
-    copy.exist?.should be_true
-  end
-
   it "can delete an empty directory" do
     FileUtils.mkdir('empty')
     dir = IMW.open('empty')
@@ -126,22 +79,6 @@ describe IMW::Resources::LocalDirectory do
   it "can recursively delete a directory" do
     @dir.rm_rf
     @dir.exist?.should be_false
-  end
-
-  before do
-    FileUtils.mkdir_p('subdir')
-  end
-
-  it "can copy to a directory" do
-    @dir.cp_to_dir('subdir')
-    @dir.exist?.should be_true
-    IMW::Resource.new('subdir').contains?(@dir.basename).should be_true
-  end
-
-  it "can move to a directory" do
-    @dir.mv_to_dir('subdir')
-    @dir.exist?.should be_false
-    IMW::Resource.new('subdir').contains?(@dir.basename).should be_true
   end
 
   it "can list its contents" do
@@ -158,4 +95,4 @@ describe IMW::Resources::LocalDirectory do
 
 end
 
-  
+

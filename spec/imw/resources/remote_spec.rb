@@ -7,19 +7,6 @@ describe IMW::Resources::RemoteFile do
 
   before { @file = IMW.open('http://www.google.com') }
 
-  describe 'on the filesystem' do
-
-    it "can copy a remote file to a path on the local filesystem" do
-      @file.cp('google.html')
-      IMWTest::TMP_DIR.should contain('google.html')
-    end
-
-    it "can copy a remote file to a directory on the local filesystem" do
-      @file.cp_to_dir(IMWTest::TMP_DIR)
-      IMWTest::TMP_DIR.should contain('_index') # see IMW::Resources::Schems::HTTP
-    end
-  end
-
   describe 'with the file' do
 
     it "can read a remote file" do
