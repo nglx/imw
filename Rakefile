@@ -18,3 +18,13 @@ begin
 rescue LoadError
   puts "Jeweler (or a dependency) not available.  Install it with: sudo gem install jeweler"
 end
+
+desc "Build tags"
+task :tags do
+  system "etags -R bin etc examples lib spec"
+end
+
+desc "Build docs"
+task :docs do
+  system "yardoc"
+end
