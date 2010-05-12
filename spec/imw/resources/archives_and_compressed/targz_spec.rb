@@ -9,9 +9,13 @@ describe IMW::Resources::Archives::Targz do
   end
 
   it_should_behave_like 'an archive of files'
-  #it_should_behave_like 'a compressed file'
 end
 
 
+describe IMW::Resources::Archives::Targz do
+  before do
+    @extension = 'tar.gz'
+  end
 
-
+  it_should_behave_like 'a compressed file'
+end

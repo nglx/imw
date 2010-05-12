@@ -9,8 +9,15 @@ describe IMW::Resources::Archives::Tarbz2 do
   end
 
   it_should_behave_like 'an archive of files'
-  # it_should_behave_like 'a compressed file'
 end
+
+describe IMW::Resources::Archives::Tarbz2 do
+  before do
+    @extension = 'tar.bz2'
+  end
+  it_should_behave_like 'a compressed file'
+end
+
 
 
 

@@ -17,7 +17,7 @@ module IMW
             :program               => :bzip2,
             :decompression_program => :bunzip2,
             :decompress            => '',
-            :extension             => '.bz2'
+            :extension             => 'bz2'
           }
         end
 
@@ -42,6 +42,15 @@ module IMW
           IMW.system(archive_settings[:program], archive_settings[:create], path_between_archive_and_compression, *input_paths.flatten)
           IMW.open(path_between_archive_and_compression).compress!
         end
+
+        def decompressed_basename
+          case extname
+          when '.tar.bz2' then basename[0..-5]               # .tar.bz2 => .tar
+          when '.tbz2'    then basename.gsub(/tbz2$/, 'tar') # .tbz2    => .tar
+          else                 basename[0..-(extname.size + 1)]
+          end
+        end
+        
 
         protected
         def path_between_archive_and_compression
