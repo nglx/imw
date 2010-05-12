@@ -21,7 +21,7 @@ end
 
 desc "Build tags"
 task :tags do
-  system "etags -R bin etc examples lib spec"
+  system "etags -R README.rdoc bin etc examples lib spec"
 end
 
 desc "Build docs"

@@ -25,14 +25,13 @@ data.  It has the following goals:
 The Infinite Monkeywrench is a powerful tool but it is not always the
 right one to use.  IMW is **not** designed for
 
-* Scraping vast amounts of data (use Wuclan[http://github.com/infochimps/wuclan], Monkeyshines[http://github.com/infochimps/monkeyshines], and Edamame[http://github.com/infochimps/edamame].)
+* Scraping vast amounts of data (use Wuclan[http://github.com/infochimps/wuclan] and Monkeyshines[http://github.com/infochimps/monkeyshines])
 
 * Really, really big datasets (use Wukong[http://github.com/infochimps/wukong] and Hadoop[http://hadoop.apache.org])
 
-* Data mining
+* Data mining or statistical analysis
 
-* Data visualization
-
+* Visualization
 
 = Setup
 
@@ -47,21 +46,42 @@ and then install IMW
 
   $ sudo gem install imw
 
-= IMW Basics
-
-The central goal of IMW is to make workflow involved in processing a
-dataset from a raw source to a finished product as simple as possible.
-
-To help achieve this goal, IMW creates lots of convenient structures
-and methods.  The following sections provide a tour of these.  
-
-It is assumed that you've installed IMW and required it in a script
-via
+In all the examples that follow it is assumed that you've installed
+IMW and required it in a script via
 
   require 'rubygems'
   require 'imw'
 
-== Paths
+= Resources
+
+IMW is centered around processing resources.  A resource can be
+_anything_ with a URI and you create one using IMW.open.
+
+  csv     = IMW.open('/path/to/my_data.csv')
+  html    = IMW.open('http://www.infochimps.com')
+  tar_bz2 = IMW.open(
+
+IMW dynamically extends a resource with modules appropriate to it when
+you open it.  In the above case, +csv+ would be automatically extended
+by the IMW::Resources::Formats::Csv module, among others:
+
+  csv.resource_modules
+  => [IMW::Resources::LocalObj, IMW::Resources::LocalFile, IMW::Resources::Compressible, IMW::Resources::Formats::Csv]
+
+while +html+ will use a different set
+
+  html.resource_modules
+  => [IMW::Resources::LocalObj, IMW::Resources::LocalFile, IMW::Resources::Compressible, IMW::Resources::Formats::Csv]
+
+
+Consult the documentation for the modules a resource uses to learn
+what it can do.
+
+Since resources are built around the idea of URIs, you can explicitly i
+
+== Manipulating Paths
+
+You can p
 
 IMW holds a registry of paths that you can define on the fly or store
 in a configuration file.
