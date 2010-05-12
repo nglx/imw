@@ -36,9 +36,7 @@ share_examples_for "an archive of files" do
   end
 
   it "can create an archive" do
-    puts `tree #{IMWTest::TMP_DIR}`
-    @archive.create(*Dir[@initial_directory + "/**/*"])
-    puts `tree #{IMWTest::TMP_DIR}`    
+    @archive.create(*Dir[@initial_directory + '/**/*'])
     @archive.should contain_paths_like(@initial_directory, :relative_to => @root)
   end
 

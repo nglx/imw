@@ -8,12 +8,12 @@ module IMW
         include IMW::Resources::Archive
         
         def archive_settings
-          {
+          @archive_settings ||= {
             :program => :rar,
-            :create  => "a -o+ -inul",
-            :append  => "a -o+ -inul",
+            :create  => ['a', '-o+', '-inul'],
+            :append  => ['a', '-o+', '-inul'],
             :list    => "vb",
-            :extract => "x -o+ -inul"
+            :extract => ['x', '-o+', '-inul']
           }
         end
       end

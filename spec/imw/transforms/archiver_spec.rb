@@ -25,8 +25,9 @@ describe IMW::Transforms::Archiver do
     @zip      = "foobar-zip.zip"
     @tarbz2   = "foobar-tarbz2.tar.bz2"
     @targz    = "foobar-targz.tar.gz"
+    @tar      = "foobar-tar.tar"
     @rar      = "foobar-rar.rar"
-    @archives = [@zip, @tarbz2, @targz]
+    @archives = [@zip, @tarbz2, @targz, @rar, @tar]
 
     @local_files = @files + @compressed_files + @archives
 
@@ -87,16 +88,11 @@ describe IMW::Transforms::Archiver do
   end
   
   describe "when packaging files" do
-    before do
-      @package_tarbz2 = "package.tar.bz2"
-      @package_zip    = "package.zip"
-      @package_targz  = "package.tar.gz"
-      @packages = [@package_tarbz2, @package_zip, @package_targz]
-    end
+    @packages = ["package.tar.bz2", "package.zip", "package.tar.gz", "package.tar", "package.rar"]
 
-    it "should create a package file containing the proper files and return it" do
-      @packages.each do |package|
-        output = @archiver.package! package
+    @packages.each do |package|    
+      it "should create a #{package} file containing all the files and return it" do
+        output = @archiver.package!(package)
         output.basename.should == package
         @archiver.tmp_dir.should contain(IMW.open(package).contents)
       end
@@ -106,16 +102,16 @@ describe IMW::Transforms::Archiver do
 
       it "should prepare input files without being asked" do
         @archiver.prepared?.should be_false
-        @archiver.package! @packages.first
+        @archiver.package! 'package.tar.bz2'
         @archiver.prepared?.should be_true
       end
       
       it "should not prepare input files once they've already been prepared" do
         @archiver.prepared?.should be_false
-        @archiver.package! @packages.first
+        @archiver.package! 'package.tar.bz2'
         @archiver.prepared?.should be_true        
         @archiver.should_not_receive(:prepare!)
-        @archiver.package! @packages.last
+        @archiver.package! 'package.tar.gz'
       end
     end
   end

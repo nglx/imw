@@ -30,7 +30,6 @@ module IMW
       #
       # @param [String, IMW::Resource] input_paths the paths to add to this archive
       def create *input_paths
-        input_paths.map! { |p| IMW.local_path(p) }
         should_have_archive_setting!("Cannot create archive #{path}", :program, :create)
         IMW.system archive_settings[:program], archive_settings[:create], path, *input_paths.flatten
         self
@@ -40,7 +39,6 @@ module IMW
       #
       # @param [String, IMW::Resource] input_paths the paths to add to this archive
       def append *input_paths
-        input_paths.map! { |p| IMW.local_path(p) }
         should_have_archive_setting!("Cannot append to archive #{path}", :append)
         IMW.system archive_settings[:program], archive_settings[:append], path, *input_paths.flatten
         self
@@ -61,8 +59,10 @@ module IMW
         should_exist!("Cannot list archive contents.")
         should_have_archive_setting!("Cannot list archive #{path}", :list, [:unarchiving_program, :program])
         program = archive_settings[:unarchiving_program] || archive_settings[:program]
-        # FIXME this needs to be more robust        
-        command = [program, archive_settings[:list], path.gsub(' ', '\ ')].join ' '
+        # FIXME this needs to be more robust
+        flags = archive_settings[:list]
+        flags = flags.join(' ') if flags.is_a?(Array)
+        command = [program, flags, path.gsub(' ', '\ ')].join(' ')
         output  = `#{command}`
         archive_contents_string_to_array(output)
       end
