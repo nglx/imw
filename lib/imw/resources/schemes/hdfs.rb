@@ -186,6 +186,18 @@ module IMW
           HDFS.fs(:cat, path, &block)
         end
 
+        # Return a handle on a StringIO object representing the
+        # content in this HDFS file.
+        #
+        # Be VERY careful how you use this!  It is a StringIO object
+        # so the whole HDFS file is read into a string before
+        # returning the handle.
+        #
+        # @return [StringIO]
+        def io
+          @io ||= StringIO.new(read)
+        end
+
         # Map over the lines of this HDFS resource.
         #
         # @yield [String] each line of the file
@@ -210,7 +222,7 @@ module IMW
         def contents
           returning([]) do |paths|
             HDFS.fs(:ls, path) do |line|
-              next if line /^Found.*items$/
+              next if line =~ /^Found.*items$/
               paths << line.split.last
             end
           end
