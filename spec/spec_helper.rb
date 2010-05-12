@@ -10,8 +10,8 @@ require 'imw'
 Dir[File.dirname(__FILE__) + "/support/**/*.rb"].each { |path| require path }
 
 module IMWTest
-  TMP_DIR   = "/tmp/imwtest"
-  DATA_DIR  = File.join(IMW_SPEC_DIR, 'data')
+  TMP_DIR   = "/tmp/imwtest" unless defined?(TMP_DIR)
+  DATA_DIR  = File.join(IMW_SPEC_DIR, 'data') unless defined?(DATA_DIR)
 end
 
 Spec::Runner.configure do |config|

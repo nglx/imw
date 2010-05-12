@@ -3,11 +3,11 @@ require 'fileutils'
 module IMWTest
   module Random
 
-    STRING_CHARS        = ("a".."z").to_a + ("A".."Z").to_a + ("0".."9").to_a + [' ',' ',' ',' ',' ']
-    TEXT_CHARS          = ("a".."z").to_a + ("A".."Z").to_a + ("0".."9").to_a + [' ',' ',' ',' ',' ',"\n"]
-    FILENAME_CHARS      = ("a".."z").to_a + ("A".."Z").to_a + ("0".."9").to_a + ["-","_",' ']
-    FILENAME_MAX_LENGTH = 9
-    TEXT_MAX_LENGTH     = 1024
+    STRING_CHARS        = ("a".."z").to_a + ("A".."Z").to_a + ("0".."9").to_a + [' ',' ',' ',' ',' '] unless defined?(STRING_CHARS)
+    TEXT_CHARS          = ("a".."z").to_a + ("A".."Z").to_a + ("0".."9").to_a + [' ',' ',' ',' ',' ',"\n"] unless defined?(TEXT_CHARS)
+    FILENAME_CHARS      = ("a".."z").to_a + ("A".."Z").to_a + ("0".."9").to_a + ["-","_",' '] unless defined?(FILENAME_CHARS)
+    FILENAME_MAX_LENGTH = 9 unless defined?(FILENAME_MAX_LENGTH)
+    TEXT_MAX_LENGTH     = 1024 unless defined?(TEXT_MAX_LENGTH)
     EXTENSIONS          = [
                            [/\.csv$/      , :csv_file],
                            [/\.xml$/      , :xml_file],
@@ -19,21 +19,7 @@ module IMWTest
                            [/\.tar$/      , :tar_file],                           
                            [/\.rar$/      , :rar_file],
                            [/\.zip$/      , :zip_file]
-                         ]
-    EXTERNAL_PROGRAMS = if defined?(IMW) && defined?(IMW::EXTERNAL_PROGRAMS)
-                          IMW::EXTERNAL_PROGRAMS
-                        else
-                          {
-        :tar => "tar",
-        :rar => "rar",
-        :zip => "zip",
-        :unzip => "unzip",
-        :gzip => "gzip",
-        :bzip2 => "bzip2",
-        :wget => "wget"
-      }
-                        end
-
+                         ] unless defined?(EXTENSIONS)
     # Return a random filename.  Optional +length+ to set the maximum
     # length of the filename returned.
     def self.basename options = {}
@@ -115,7 +101,7 @@ module IMWTest
     def self.tar_file filename
       tmpd = File.dirname(filename) + '/dir'
       directory_with_files(tmpd)
-      FileUtils.cd(tmpd) {|dir| system("#{EXTERNAL_PROGRAMS[:tar]} -cf file.tar *") }
+      FileUtils.cd(tmpd) {|dir| system("tar -cf file.tar *") }
       FileUtils.cp(tmpd + "/file.tar",filename)
       FileUtils.rm_rf(tmpd)
     end
@@ -126,7 +112,7 @@ module IMWTest
       tar = File.dirname(filename) + "/file.tar"
       targz = tar + ".gz"
       tar_file tar
-      system("#{EXTERNAL_PROGRAMS[:gzip]} #{tar}")
+      system("gzip #{tar}")
       FileUtils.cp(targz,filename)
       FileUtils.rm(targz)
     end
@@ -137,7 +123,7 @@ module IMWTest
       tar = File.dirname(filename) + "/file.tar"
       tarbz2 = tar + ".bz2"
       tar_file tar
-      system("#{EXTERNAL_PROGRAMS[:bzip2]} #{tar}")
+      system("bzip2 #{tar}")
       FileUtils.cp(tarbz2,filename)
       FileUtils.rm(tarbz2)
     end
@@ -146,7 +132,7 @@ module IMWTest
     def self.bz2_file filename
       text_path = File.dirname(filename) + "/fake_file"
       text_file(text_path)
-      system("#{EXTERNAL_PROGRAMS[:bzip2]} #{text_path}")
+      system("bzip2 #{text_path}")
       FileUtils.mv(text_path + ".bz2", filename)
     end
 
@@ -154,7 +140,7 @@ module IMWTest
     def self.gz_file filename
       text_path = File.dirname(filename) + "/fake_file"
       text_file(text_path)
-      system("#{EXTERNAL_PROGRAMS[:gzip]} #{text_path}")
+      system("gzip #{text_path}")
       FileUtils.mv(text_path + ".gz", filename)
     end
     
@@ -164,7 +150,7 @@ module IMWTest
     def self.rar_file filename
       tmpd = File.dirname(filename) + '/dir'
       directory_with_files(tmpd)
-      FileUtils.cd(tmpd) {|dir| system("#{EXTERNAL_PROGRAMS[:rar]} a -o+ -inul file.rar *") }
+      FileUtils.cd(tmpd) {|dir| system("rar a -o+ -inul file.rar *") }
       FileUtils.cp(tmpd + "/file.rar",filename)
       FileUtils.rm_rf(tmpd)
     end
@@ -174,7 +160,7 @@ module IMWTest
     def self.zip_file filename
       tmpd = File.dirname(filename) + '/dir'
       directory_with_files(tmpd)
-      FileUtils.cd(tmpd) {|dir| system("#{EXTERNAL_PROGRAMS[:zip]} -r file.zip *") }
+      FileUtils.cd(tmpd) {|dir| system("zip -qqr file.zip *") }
       FileUtils.cp(tmpd + "/file.zip",filename)
       FileUtils.rm_rf(tmpd)
     end
