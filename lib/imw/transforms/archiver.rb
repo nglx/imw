@@ -176,7 +176,7 @@ module IMW
       # Package the contents of the temporary directory to an archive
       # at +output+ but return exceptions instead of raising them.
       #
-      # @param [String, Addressable::URI, IMW::Resource] output the path to the output package
+      # @param [String, IMW::Resource] output the path to the output package
       # @param [Hash] options
       # @return [RuntimeError, IMW::Resource] either the completed package or the error which was raised
       def package output, options={}
@@ -191,20 +191,16 @@ module IMW
       # at +output+.  The extension of +output+ determines the kind of
       # archive.
       #
-      # @param [String, Addressable::URI, IMW::Resource] output the path to the output package
+      # @param [String, IMW::Resource] output the path to the output package
       # @param [Hash] options
       # @return [IMW::Resource] the completed package
       def package! output, options={}
         prepare!                          unless prepared?
-        output = IMW.open(output)         if output.is_a?(String)
+        output = IMW.open(output)
         FileUtils.mkdir_p(output.dirname) unless File.exist?(output.dirname)        
         output.rm!                        if output.exist?
-        FileUtils.cd(tmp_dir) do
-          temp_output = IMW.open(output.basename)
-          packaged_output = temp_output.create(*Dir["#{name}/**/*"]).mv(output.path)
-          temp_output.rm if temp_output.exist?
-          add_processing_error "Archiver: couldn't create archive #{output.path}" unless output.exists?
-        end
+        FileUtils.cd(tmp_dir) { IMW.open(output.basename).create(*Dir["#{name}/**/*"]).mv(output.path) }
+        add_processing_error "Archiver: couldn't create archive #{output.path}" unless output.exists?
         output
       end
 
