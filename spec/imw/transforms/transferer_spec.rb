@@ -70,9 +70,13 @@ describe IMW::Transforms::Transferer do
   end
 
   describe "transferring HDFS files" do
+    before do
+      IMW::Resources::Schemes::HDFS.stub!(:fs)
+    end
 
     it "can copy a local file to an HDFS path" do
       IMWTest::Random.file @local.path
+
       IMW::Resources::Schemes::HDFS.should_receive(:fs).with(:put, @local.path, @hdfs.path)
       IMW::Transforms::Transferer.new(:cp, @local, @hdfs).transfer!
     end

@@ -10,6 +10,11 @@ module IMW
       # Filesystem}[http://hadoop.apache.org/common/docs/current/hdfs_design.html].
       module HDFS
 
+        # Checks to see if this is a file or directory
+        def self.extended obj
+          obj.extend(obj.is_directory? ? HDFSDirectory : HDFSFile)
+        end
+
         # Is this resource an HDFS resource?
         #
         # @return [true, false]
@@ -33,22 +38,12 @@ module IMW
         def mv new_uri
           IMW::Transforms::Transferer.new(:mv, self, new_uri).transfer!
         end
-        
-        # Does this path exist on the HDFS?
-        #
-        # @return [true, false]
-        def exist?
-          HDFS.fs(:ls, dirname).each do |line|
-            return true if line.ends_with?(path)
-          end
-          false
-        end
-        alias_method :exists?, :exist?
 
         # Delete this resource from the HDFS.
         #
-        # @option options :skip_trash
+        # @option options [true,false] :skip_trash
         def rm options={}
+          should_exist!("Cannot delete.")
           args = [:rm]
           args << '-skipTrash' if options[:skip] || options[:skip_trash] || options[:skipTrash]
           args << path
@@ -56,14 +51,82 @@ module IMW
           self
         end
         alias_method :rm!, :rm
+        
+        
+        # Does this path exist on the HDFS?
+        #
+        # @return [true, false]
+        def exist?
+          return @exist unless @exist.nil?
+          refresh!
+          @exist
+        end
+        alias_method :exists?, :exist?
+
 
         # Return the size (in bytes) of this resource on the HDFS.
         #
+        # This value is cached.  Call +refresh+ to refresh the cache
+        # manually.
+        #
         # @return [Fixnum]
         def size
-          HDFS.fs(:du, path).each do |line|
-            return $1.to_i if line =~ /^(\d+)/
+          return @size unless @size.nil?
+          refresh!
+          should_exist!("Cannot report size")
+          @size
+        end
+
+        # Return the number of directories contained at or below this
+        # path on the HDFS.
+        #
+        # This value is cached.  Call +refresh+ to refresh the cache
+        # manually.
+        #
+        # @return [Fixnum]
+        def num_dirs
+          return @num_dirs unless @num_dirs.nil?
+          refresh!
+          should_exist!("Cannot report number of directories.")
+          @num_dirs
+        end
+
+        # Return the number of files contained at or below this path
+        # on the HDFS.
+        #
+        # This value is cached.  Call +refresh+ to refresh the cache
+        # manually.
+        #
+        # @return [Fixnum]
+        def num_files
+          return @num_files unless @num_files.nil?
+          refresh!
+          should_exist!("Cannot report number of files.")
+          @num_files
+        end
+
+        # Is this resource an HDFS directory?
+        #
+        # @return [true, false]
+        def is_directory?
+          exist? && num_dirs > 0
+        end
+
+        # Refresh the cached file properties.
+        #
+        # @return [IMW::Resource] this resource
+        def refresh!
+          response = HDFS.fs(:count, path)
+          if response.blank? || response =~ /^Can not find listing for/
+            @exist = false
+            @num_dirs, @num_files, @size, @hdfs_path = false, false, false, false
+          else
+            @exist = true
+            parts = response.split
+            @num_dirs, @num_files, @size = parts[0..2].map(&:to_i)
+            @hdfs_path = parts.last
           end
+          self
         end
 
         # Execute +command+ with +args+ on the Hadoop Distributed
@@ -79,7 +142,9 @@ module IMW
         # @yield [String] each line of the command's output
         # @return [String] the command's output
         def self.fs command, *args
-          output = `#{executable} fs -#{command} #{args.compact.map(&:to_str).join(' ')}`.chomp
+          command_string = "#{executable} fs -#{command} #{args.compact.map(&:to_str).join(' ')}"
+          command_string += " 2>&1" if command == :count # FIXME or else it just spams the screen when we do HDFS#refresh!
+          output = `#{command_string}`.chomp
           if block_given?
             output.split("\n").each do |line|
               yield line
@@ -94,11 +159,72 @@ module IMW
         #
         # @return [String]
         def self.executable
-          @executable ||= `which hadoop`.chomp
+          @executable ||= begin
+                            string = `which hadoop`.chomp
+                            raise IMW::Error.new("Could not find hadoop command.  Is Hadoop installed?") if string.blank?
+                            string
+                          end
+        end
+      end
+
+      # Defines methods for reading data from HDFS files.
+      module HDFSFile
+
+        # Return the contents of this HDFS file as a string.
+        #
+        # Be VERY careful how you use this!
+        #
+        # @return [String]
+        def read
+          HDFS.fs(:cat, path)
+        end
+
+        # Iterate through each line of this HDFS resource.
+        #
+        # @yield [String] each line of the file
+        def each &block
+          HDFS.fs(:cat, path, &block)
+        end
+
+        # Map over the lines of this HDFS resource.
+        #
+        # @yield [String] each line of the file
+        # @return [Array] the result of the block on each line
+        def map &block
+          returning([]) do |output|
+            HDFS.fs(:cat, path) do |line|
+              output << block.call(line)
+            end
+          end
+        end
+
+      end
+
+      # Defines methods for listing contents of HDFS directories.
+      module HDFSDirectory
+
+        # Return the paths of all files and directories directly below
+        # this directory on the HDFS.
+        #
+        # @return [Array<String>]
+        def contents
+          returning([]) do |paths|
+            HDFS.fs(:ls, path) do |line|
+              next if line /^Found.*items$/
+              paths << line.split.last
+            end
+          end
+        end
+
+        # Return the resources directly below this directory on the
+        # HDFS.
+        #
+        # @return [Array<IMW::Resource>]
+        def resources
+          contents.map { |path| IMW.open(path) }
         end
         
       end
     end
   end
 end
-
