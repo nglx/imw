@@ -18,7 +18,7 @@ module IMW
     def initialize *args
       @args    = args
       @options = DEFAULT_OPTIONS.dup
-      parser.parse!(args)       # will trim options from args
+      parser.parse!(args)
     end
 
     def parser
