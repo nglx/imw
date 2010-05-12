@@ -1,4 +1,3 @@
-require 'ostruct'
 require 'addressable/uri'
 require 'imw/resources'
 
@@ -42,12 +41,11 @@ module IMW
   #
   # Read the documentation for modules in IMW::Resources to learn more
   # about the various behaviors an IMW::Resource can acquire.
-  class Resource < OpenStruct
+  class Resource
 
     attr_reader :uri, :mode
     
     def initialize uri, options={}
-      super()
       self.uri = uri
       @mode    = options[:mode] || 'r'
       extend_appropriately! unless options[:skip_modules]
@@ -159,30 +157,33 @@ module IMW
       IMW.open(self.uri.to_s)
     end
 
-    # If +method+ is a query (ends with a question mark) then return
-    # the value of the open struct member with the question mark
-    # removed
+    # If +method+ begins with the strings +is+, +on+, or +via+ and
+    # ends with a question mark then we interpret it as a question
+    # this resource doesn't know how to answer -- so we have it answer
+    # +false+.
     #
-    #   r = IMW::Resource.new
-    #   r.some_method?
-    #   => nil
-    #   r.some_method = true
-    #   r.some_method?
-    #   => true
-    def method_missing mid, *args
-      mname = mid.id2name
-      len = args.length
-      if mname.chomp!('=')
-        if len != 1
-          raise ArgumentError, "wrong number of arguments (#{len} for 1)", caller(1)
-        end
-        modifiable[new_ostruct_member(mname)] = args[0]
-      elsif len == 0 && mname =~ /^(.*)\?$/
-        @table[$1.to_sym]
-      elsif len == 0
-        @table[mid]
+    # As an example, consider the following loop:
+    #
+    #   IMW.open('/tmp').all_contents.each do |obj|
+    #     if obj.is_archive?
+    #       # ... do something
+    #     end
+    #   end
+    #
+    # When +obj+ is initialized and it _isn't_ an archive, then it
+    # doesn't know about the <tt>is_archive?</tt> method -- but it
+    # should therefore answer false anyway.
+    #
+    # This lets a basic text file answer questions about whether it's
+    # an archive (or on S3, or accessed via some user-defined scheme,
+    # &c.) without needing to know anything about archives (or S3 or
+    # the user-defined scheme).
+    def method_missing method, *args
+      if args.empty? && method.to_s =~ /(is|on|via)_.*\?$/
+        # querying for a boolean response so answer false
+        return false
       else
-        raise NoMethodError, "undefined method `#{mname}' for #{self}, extended by #{resource_modules.join(', ')}", caller(1)
+        raise IMW::NoMethodError, "undefined method `#{method}' for #{self}, extended by #{resource_modules.join(', ')}"
       end
     end
   end

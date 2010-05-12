@@ -5,40 +5,23 @@ describe IMW::Resource do
   describe "handling missing methods" do
     before do
       @resource = IMW::Resource.new('/home/foof.txt', :skip_modules => true)
-      @table    = @resource.instance_variable_get('@table')
     end
 
-    it "should not set any table values on initialization" do
-      @table[:is_remote].should be_nil
+    it "should return false when querying with a method that isn't defined" do
+      @resource.is_remote?.should be_false
     end
 
-    it "should return nil when accessing an unset table value" do
-      @table[:is_remote].should be_nil
+    it "should raise an IMW::NoMethodError in any other case" do
+      lambda { @resource.do_seomthing }.should raise_error(IMW::NoMethodError)
     end
 
-    it "should return nil when querying an unset table value" do
-      @resource.is_remote?.should be_nil
-    end
-
-    it "should be able to set a table value" do
-      @resource.is_remote = true
-      @table[:is_remote].should be_true
-      @resource.is_remote = 17
-      @table[:is_remote].should == 17
-    end
-
-    it "should be able to access a set table value" do
-      @resource.is_remote = true
-      @resource.is_remote.should be_true
-      @resource.is_remote = 17
-      @resource.is_remote.should == 17
-    end
-
-    it "should be able to query a set table value" do
-      @resource.is_remote = true
-      @resource.is_remote?.should be_true
-      @resource.is_remote = 17
-      @resource.is_remote?.should == 17
+    it "should print the modules it's been extended by when raising an IMW::NoMethodError" do
+      begin
+        @resource.extend(IMW::Resources::LocalObj)
+        @resource.do_something
+      rescue IMW::NoMethodError => e
+        e.message.should match(/extended by IMW::Resources::LocalObj/)
+      end
     end
   end
 
