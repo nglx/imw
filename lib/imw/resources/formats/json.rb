@@ -45,6 +45,7 @@ module IMW
           require 'json'
           write(data.to_json)
           io.close unless options[:persist]
+          self
         end
       end
     end

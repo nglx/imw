@@ -45,6 +45,7 @@ module IMW
           require 'yaml'
           write(data.to_yaml)
           io.close unless options[:persist]
+          self
         end
       end
     end
