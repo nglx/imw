@@ -36,9 +36,15 @@ module IMW
         # Dump an array of arrays into this resource.
         #
         # @param [Array] data array of arrays to dump
+        # @param [Hash] options
+        # @option options [true, false] :persist Keep this resource's IO object open after dumping
         def dump data, options={}
           require 'fastercsv'
-          FasterCSV.dump(data, io, delimited_options)
+          data.each do |row|
+            write(FasterCSV.generate_line(row, delimited_options))
+          end
+          io.close unless options[:persist]
+          self
         end
       end
 

@@ -15,7 +15,7 @@ describe IMW::Resources::Formats::Csv do
   it "should be able to write CSV" do
     data = [['foobar', 1, 2], ['bazbooz', 3, 4]]
     IMW.open!('test.csv').dump(data)
-    IMW.open('test.csv').load[1].last == 4
+    IMW.open('test.csv').load[1].last.should == "4"
   end
 
   it "should yield each row when load is given a block" do
