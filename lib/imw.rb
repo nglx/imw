@@ -49,15 +49,6 @@ module IMW
     IMW::Resource.new(obj, options)
   end
 
-  # Return the local_path of the given +obj+.
-  #
-  # @param [String, IMW::Resource] obj
-  # @return [String]
-  def self.local_path obj
-    return obj.path if obj.is_a?(IMW::Resource)
-    File.expand_path(obj)
-  end
-  
   # Works the same way as IMW.open except opens the resource for
   # writing.
   #
@@ -92,16 +83,14 @@ module IMW
   #
   #   # Filter the raw data to those values which match some criterion defined by <tt>accept?</tt>
   #   munge do
-  #     returning([]) do |data|
-  #       raw_data  = IMW.open(path_to(:raw_data)).map do |row|
-  #         data << row if accept?(row)
-  #       end
-  #     end.dump(path_to(:fixd_data)
+  #     IMW.open(path_to(:raw_data)).map do |row|
+  #       row if accept?(row)
+  #     end.compact.dump(path_to(:fixd_data))
   #   end
   #
   #   # Compress this new data
   #   package do
-  #     IMW.open(path_to(:fixd_data)).compress.mv_to_dir(path_to(:pkgd))
+  #     IMW.open(path_to(:fixd_data)).compress.mv(path_to(:pkgd))
   #   end
   # end
   #
