@@ -109,7 +109,7 @@ class Array
 
   # Dump the data in this array to the resource at the given +uri+.
   def dump uri
-    IMW.open(uri).dump(self)
+    IMW.open(uri, :mode => 'w').dump(self)
   end
 
 end
