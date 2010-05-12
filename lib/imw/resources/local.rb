@@ -63,6 +63,7 @@ module IMW
       def rm
         should_exist!("Cannot delete")
         FileUtils.rm path
+        self
       end
       alias_method :rm!, :rm
 
