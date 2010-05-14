@@ -1,4 +1,4 @@
-require File.join(File.dirname(__FILE__),'../../spec_helper')
+require File.join(File.dirname(__FILE__),'../spec_helper')
 
 # To use this shared example group define instance variables
 # <tt>@extension</tt> and <tt>@cannot_append</tt> in your tests:
@@ -11,8 +11,8 @@ require File.join(File.dirname(__FILE__),'../../spec_helper')
 #
 #   it_should_behave_like "an archive of files"
 #
-# The <tt>@extension</tt> should correspond to an IMW::Resources
-# module with a registered handler.
+# The <tt>@extension</tt> should correspond to an IMW module with a
+# registered handler.
 #
 # If <tt>@cannot_append</tt> evaluates to true then the specs for
 # appending to files will check for an error (this is because one

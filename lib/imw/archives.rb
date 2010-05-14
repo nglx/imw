@@ -1,13 +1,24 @@
 module IMW
-  module Resources
 
-    module Archives
-      autoload :Rar,    'imw/resources/archives_and_compressed/rar'
-      autoload :Tar,    'imw/resources/archives_and_compressed/tar'
-      autoload :Tarbz2, 'imw/resources/archives_and_compressed/tarbz2'
-      autoload :Targz,  'imw/resources/archives_and_compressed/targz'
-      autoload :Zip,    'imw/resources/archives_and_compressed/zip'
-    end
+  # Contains modules which define the behavior of archive files.
+  module Archives
+
+    # Handlers for archives.
+    HANDLERS = [
+                ["Archives::Tarbz2",     Proc.new { |r| r.is_local? && r.path =~ /\.tar\.bz2$/  } ],
+                ["Archives::Tarbz2",     Proc.new { |r| r.is_local? && r.path =~ /\.tbz2$/      } ],
+                ["Archives::Targz",      Proc.new { |r| r.is_local? && r.path =~ /\.tar\.gz$/   } ],
+                ["Archives::Targz",      Proc.new { |r| r.is_local? && r.path =~ /\.tgz$/       } ],
+                ["Archives::Tar",        Proc.new { |r| r.is_local? && r.path =~ /\.tar$/       } ],
+                ["Archives::Rar",        Proc.new { |r| r.is_local? && r.path =~ /\.rar$/       } ],
+                ["Archives::Zip",        Proc.new { |r| r.is_local? && r.path =~ /\.zip$/       } ]
+               ]
+
+    autoload :Rar,    'imw/archives/rar'
+    autoload :Tar,    'imw/archives/tar'
+    autoload :Tarbz2, 'imw/archives/tarbz2'
+    autoload :Targz,  'imw/archives/targz'
+    autoload :Zip,    'imw/archives/zip'
 
     # Defines methods for creating, appending to, extracting, and
     # listing an archive file.  This module isn't used to directly
@@ -15,7 +26,7 @@ module IMW
     # (e.g. - IMW::Resources::Archives::Tarbz2) include this module
     # and define the specific settings (command-line flags, &c.)
     # required to make things work.
-    module Archive
+    module Base
 
       attr_accessor :archive_settings
 
@@ -93,5 +104,4 @@ module IMW
     end
   end
 end
-
 

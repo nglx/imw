@@ -1,10 +1,19 @@
 module IMW
-  module Resources
-    
-    module CompressedFiles
-      autoload :Bz2, 'imw/resources/archives_and_compressed/bz2'
-      autoload :Gz, 'imw/resources/archives_and_compressed/gz'
-    end
+
+  # Contains modules which define the behavior of compressed files.
+  module CompressedFiles
+    autoload :Bz2,          'imw/compressed_files/bz2'
+    autoload :Gz,           'imw/compressed_files/gz'
+    autoload :Compressible, 'imw/compressed_files/compressible'
+
+    # Handlers which include modules for compressed file formats as
+    # well as the IMW::CompressedFiles::Compressible module for
+    # compressing regular files.
+    HANDLERS = [
+                ["CompressedFiles::Compressible", Proc.new { |r| r.is_local? && r.is_file? && r.path != /\.(bz2|gz|tgz|tbz2)$/                       } ],
+                ["CompressedFiles::Gz",           Proc.new { |r| r.is_local? && r.path =~ /\.gz$/  && r.path !~ /\.tar\.gz$/  && r.path !~ /\.tgz$/  } ],
+                ["CompressedFiles::Bz2",          Proc.new { |r| r.is_local? && r.path =~ /\.bz2$/ && r.path !~ /\.tar\.bz2$/ && r.path !~ /\.tbz2$/ } ]    
+               ]
 
     # Defines methods for decompressing a compressed file.  This
     # module isn't used to directly extend an IMW::Resource --
@@ -12,7 +21,7 @@ module IMW
     # IMW::Resources::CompressedFiles::Bz2) include this module and
     # further define the command-line flags &c. needed to make
     # everything work.
-    module CompressedFile
+    module Base
 
       attr_accessor :compression_settings
 
@@ -80,10 +89,6 @@ module IMW
           copy.mv(path) if copy && copy.exist?
         end
       end
-
     end
   end
 end
-
-
-

@@ -1,4 +1,4 @@
-require File.join(File.dirname(__FILE__),'../../spec_helper')
+require File.join(File.dirname(__FILE__),'../spec_helper')
 
 # To use this shared example group define an instance variable
 # <tt>@extension</tt> in your tests:
@@ -10,8 +10,8 @@ require File.join(File.dirname(__FILE__),'../../spec_helper')
 #
 #   it_should_behave_like "a compressed file"
 #
-# The <tt>@extension</tt> should correspond to an IMW::Resources
-# module with a registered handler.
+# The <tt>@extension</tt> should correspond to an IMW module with a
+# registered handler.
 
 share_examples_for "a compressed file" do
   include Spec::Matchers::IMW

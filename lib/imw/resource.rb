@@ -1,32 +1,35 @@
 require 'addressable/uri'
-require 'imw/resources'
 
 module IMW
+
+  # Define this constant in your configuration file to add your own
+  # URI handlers to IMW.
+  USER_DEFINED_HANDLERS = [] unless defined?(USER_DEFINED_HANDLERS)
 
   # A resource can be anything addressable via a URI.  Examples
   # include local files, remote files, webpages, &c.
   #
   # The IMW::Resource class takes a URI as input and then dynamically
-  # extends itself with appropriate modules from IMW::Resources.  As
-  # an example, calling
+  # extends itself with appropriate modules from IMW.  As an example,
+  # calling
   #
   #   my_archive = IMW::Resource.new('/path/to/my/archive.tar.bz2')
   #
   # would return an IMW::Resource extended by
-  # IMW::Resources::Archives::Tarbz2 (among other modules) which
+  # IMW::Archives::Tarbz2 (among other modules) which
   # therefore has methods for extracting, listing, and appending to
   # the archive.
   #
   # Modules are so extended based on handlers defined in the
   # <tt>imw/resources</tt> directory and accessible via
-  # IMW::Resources#handlers.  You can define your own handlers by
-  # defining the constant IMW::Resources::USER_DEFINED_HANDLERS in
-  # your configuration file.
+  # IMW::Resource.handlers.  You can define your own handlers by
+  # defining the constant IMW::Resource::USER_DEFINED_HANDLERS in your
+  # configuration file.
   #
   # The modules extending a particular IMW::Resource instance can be
   # listed as follows
   #
-  #   my_archive.resource_modules #=> [IMW::Resources::LocalObj, IMW::Resources::LocalFile, IMW::Resources::Compressible, IMW::Resources::Archives::Tarbz2]
+  #   my_archive.resource_modules #=> [IMW::Local::Base, IMW::Local::File, IMW::Local::Compressible, IMW::Archives::Tarbz2]
   #
   # By default, resources are opened for reading.  Passing in the
   # appropriate <tt>:mode</tt> option changes this:
@@ -41,6 +44,9 @@ module IMW
   #
   # Read the documentation for modules in IMW::Resources to learn more
   # about the various behaviors an IMW::Resource can acquire.
+  #
+  # You can also instantiate an IMW::Resource using IMW.open, which
+  # accepts all the same arguments as IMW::Resource.new.
   class Resource
 
     attr_reader :uri, :mode
@@ -66,9 +72,9 @@ module IMW
     end
 
     # Extend this resource with modules by passing it through a
-    # collection of handlers defined by IMW::Resources#handlers
+    # collection of handlers defined by IMW::Resource.handlers.
     def extend_appropriately!
-      IMW::Resources.extend_resource!(self)
+      self.class.extend_resource!(self)
     end
 
     # Set the URI of this resource by parsing the given +uri+ (if
@@ -186,5 +192,97 @@ module IMW
         raise IMW::NoMethodError, "undefined method `#{method}' for #{self}, extended by #{resource_modules.join(', ')}"
       end
     end
+
+    # Iterate through IMW::Resource.handlers and extend the given
+    # +resource+ with modules whose handler conditions match the
+    # resource.
+    #
+    # @param [IMW::Resource] resource the resource to extend
+    # @return [IMW::Resource] the extended resource
+    def self.extend_resource! resource
+      handlers.each do |mod_name, handler|
+        case handler
+        when Regexp    then extend_resource_with_mod_or_string!(resource, mod_name) if handler =~ resource.uri.to_s
+        when Proc      then extend_resource_with_mod_or_string!(resource, mod_name) if handler.call(resource)
+        when TrueClass then extend_resource_with_mod_or_string!(resource, mod_name)
+        else
+          raise IMW::TypeError("A handler must be Regexp, Proc, or true")
+        end
+      end
+      resource
+    end
+    
+    # A list of handlers to match against each new resource.
+    # 
+    # When an IMW::Resource is instantiated it eventually calls
+    # IMW::Resource.extend_resource! which will iterate through the
+    # handlers in IMW::Resource.handlers, extending the resource with
+    # modules whose handler conditions are satisfied.
+    #
+    # A handler is just an Array with two elements.  The first should be
+    # a module or a string identifying a module.  
+    #
+    # If the second element is a Regexp, the corresponding module will
+    # be used if the regexp matches the resource's URI (as a string)
+    #
+    # If the second element is a Proc, it will be called with the
+    # resource as its only argument and if it returns true then the
+    # module will be used.
+    #
+    # You can define your own handlers by appending them to
+    # IMW::Resource::USER_DEFINED_HANDLERS in your <tt>.imwrc</tt>
+    # file.
+    #
+    # The order in which handlers appear is significant --
+    # IMW::CompressedFiles::HANDLERS must be _before_
+    # IMW::Archives::HANDLERS, for example, because of (say)
+    # <tt>.tar.bz2</tt> files.
+    # 
+    # @return [Array]
+    def self.handlers
+      # order is important!
+      #
+      # 
+      #
+      #CompressedFiles must come before
+      # Archives because of tar.bz2 type files
+      IMW::Schemes::HANDLERS + IMW::CompressedFiles::HANDLERS + IMW::Archives::HANDLERS + IMW::Formats::HANDLERS + USER_DEFINED_HANDLERS
+    end
+
+    protected
+    # Extend +resource+ with +mod_or_string+.  Will work hard to try
+    # and interpret +mod_or_string+ as a module if it's a string.
+    #
+    # @param [IMW::Resource] resource the resource to extend
+    #
+    # @param [Module, String] mod_or_string the module or string
+    # representing a module to extend the resource with
+    def self.extend_resource_with_mod_or_string! resource, mod_or_string
+      if mod_or_string.is_a?(Module)
+        resource.extend(mod_or_string)
+      else
+        # Given a string "Mod::SubMod::SubSubMod" first split it into
+        # its parts ["Mod", "SubMod", "SubSubMod"] and then begin
+        # class_eval'ing them in order so that each is class_eval'd in
+        # the scope of the one before it.
+        #
+        # There is almost certainly a better way to do this.
+        # mod_names = mod_or_string.to_s.split('::')
+        # mods = []
+        # mod_names.each_with_index do |name, index|
+        #   if index == 0
+        #     mods << IMW.class_eval(name)
+        #   else
+        #     begin
+        #       mods << class_eval(name)
+        #     rescue NameError
+        #       mods << mods[index - 1].class_eval(name)
+        #     end
+        #   end
+        # end
+        # resource.extend(mods.last)
+        resource.extend(IMW.class_eval(mod_or_string))
+      end
+    end    
   end
 end

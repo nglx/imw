@@ -17,10 +17,10 @@ describe IMW::Resource do
 
     it "should print the modules it's been extended by when raising an IMW::NoMethodError" do
       begin
-        @resource.extend(IMW::Resources::LocalObj)
+        @resource.extend(IMW::Schemes::Local::Base)
         @resource.do_something
       rescue IMW::NoMethodError => e
-        e.message.should match(/extended by IMW::Resources::LocalObj/)
+        e.message.should match(/extended by IMW::Schemes::Local::Base/)
       end
     end
   end
@@ -28,7 +28,7 @@ describe IMW::Resource do
   describe "parsing various and sundry URIs should correctly parse a" do
     
     before do
-      IMW::Resources.should_receive(:extend_resource!).with(an_instance_of(IMW::Resource))
+      IMW::Resource.should_receive(:extend_resource!).with(an_instance_of(IMW::Resource))
     end
 
     it "local file path" do
@@ -68,7 +68,7 @@ describe IMW::Resource do
   end
 
   it "should open a URI without attempting to extend with modules if so asked" do
-    IMW::Resources.should_not_receive(:extend_resource!)
+    IMW::Resource.should_not_receive(:extend_resource!)
     IMW::Resource.new("/path/to/some/file.txt", :skip_modules => true)
   end
    

@@ -26,12 +26,15 @@ require 'imw/utils'
 # Repositories are collections of datasets and it is on these
 # collections that the +imw+ command line tool operates.
 module IMW
-  autoload :Resource,   'imw/resource'
-  autoload :Resources,  'imw/resources'
-  autoload :Repository, 'imw/repository'
-  autoload :Dataset,    'imw/dataset'
-  autoload :Transforms, 'imw/transforms'
-  autoload :Parsers,    'imw/parsers'
+  autoload :Resource,        'imw/resource'
+  autoload :Schemes,         'imw/schemes'
+  autoload :Archives,        'imw/archives'
+  autoload :CompressedFiles, 'imw/compressed_files'
+  autoload :Formats,         'imw/formats'  
+  autoload :Tools,           'imw/tools'
+  autoload :Parsers,         'imw/parsers'
+  autoload :Dataset,         'imw/dataset'  
+  autoload :Repository,      'imw/repository'
 
   # Open a resource at the given +uri+.  The resource will
   # automatically be extended by modules which make sense given the
