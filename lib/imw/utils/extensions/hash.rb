@@ -203,6 +203,6 @@ class Hash
 
   # Dump the data from this Hash into the given +uri+.
   def dump uri
-    IMW.open(uri).dump(self)
+    IMW.open!(uri).dump(self)
   end
 end
