@@ -46,9 +46,14 @@ module IMW
   # Passing in an IMW::Resource will simply return it.
   #
   # @param  [String, Addressable::URI, IMW::Resource] obj the URI to open
+  # @param [Hash] options
+  # @option options [Array<String,Module>] as same as <tt>:use_modules</tt> in IMW::Resource.extend_resource!
+  # @option options [Array<String,Module>] without same as <tt>:skip_modules</tt> in IMW::Resource.extend_resource!  
   # @return [IMW::Resource] the resulting resource, property extended for the given URI
   def self.open obj, options={}
     return obj if obj.is_a?(IMW::Resource)
+    options[:use_modules]  ||= (options[:as]      || [])
+    options[:skip_modules] ||= (options[:without] || [])
     IMW::Resource.new(obj, options)
   end
 
@@ -101,7 +106,7 @@ module IMW
   # @param [Hash]   options a hash of options (see IMW::Dataset)
   # @return [IMW::Dataset] the new dataset
   def self.dataset handle, options={}, &block
-    d = IMW::Dataset.new(handle, options)
+    d = IMW::Dataset.new(handle, options.merge(:repository => IMW.repository))
     d.instance_eval(&block) if block_given?
     d
   end

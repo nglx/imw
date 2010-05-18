@@ -50,11 +50,36 @@ module IMW
   class Resource
 
     attr_reader :uri, :mode
-    
+
+    # Create a new resource representing +uri+.
+    #
+    # IMW will automatically extend the resulting IMW::Resourcen
+    # instance with modules appropriate to the given URI.
+    #
+    #   r = IMW::Resource.new("http://www.infochimps.com")
+    #   r.resource_modules
+    #   => [IMW::Schemes::Remote::Base, IMW::Schemes::Remote::RemoteFile, IMW::Schemes::HTTP, IMW::Formats::Html]
+    #
+    # You can prevent this altogether by passing in
+    # <tt>:no_modules</tt>:
+    #
+    #   r = IMW::Resource.new("http://www.infochimps.com")
+    #   r.resource_modules
+    #   => [IMW::Schemes::Remote::Base, IMW::Schemes::Remote::RemoteFile, IMW::Schemes::HTTP, IMW::Formats::Html]
+    #
+    # And you can exert more fine-grained control with the
+    # <tt>:use_modules</tt> and <tt>:skip_modules</tt> options, see
+    # IMW::Resource.extend_resource! for details.
+    #
+    # @param [String, Addressable::URI] uri
+    # @param [Hash] options
+    # @option options [true, false] no_modules
+    # @option options [String] mode the mode to open the resource in (will be ignored when inapplicable)
+    # @return [IMW::Resource]
     def initialize uri, options={}
       self.uri = uri
       @mode    = options[:mode] || 'r'
-      extend_appropriately! unless options[:skip_modules]
+      extend_appropriately!(options) unless options[:no_modules]
     end
 
     # Return the modules this resource has been extended by.
@@ -73,8 +98,10 @@ module IMW
 
     # Extend this resource with modules by passing it through a
     # collection of handlers defined by IMW::Resource.handlers.
-    def extend_appropriately!
-      self.class.extend_resource!(self)
+    #
+    # Accepts the same options as Resource.extend_resource!.
+    def extend_appropriately! options={}
+      self.class.extend_resource!(self, options)
     end
 
     # Set the URI of this resource by parsing the given +uri+ (if
@@ -197,18 +224,26 @@ module IMW
     # +resource+ with modules whose handler conditions match the
     # resource.
     #
+    # Passing in <tt>:use_modules</tt> or <tt>:skip_modules</tt>
+    # allows overriding the default behavior of handlers.
+    #
     # @param [IMW::Resource] resource the resource to extend
+    # @param [Hash] options
+    # @option options [Array<String,Module>] use_modules a list of modules used regardless of handlers
+    # @option options [Array<String,Module>] skip_modules a list of modules not to be used regardless of handlers
     # @return [IMW::Resource] the extended resource
-    def self.extend_resource! resource
+    def self.extend_resource! resource, options={}
+      options.reverse_merge!(:use_modules => [], :skip_modules => [])
       handlers.each do |mod_name, handler|
         case handler
-        when Regexp    then extend_resource_with_mod_or_string!(resource, mod_name) if handler =~ resource.uri.to_s
-        when Proc      then extend_resource_with_mod_or_string!(resource, mod_name) if handler.call(resource)
-        when TrueClass then extend_resource_with_mod_or_string!(resource, mod_name)
+        when Regexp    then extend_resource_with_mod_or_string!(resource, mod_name, options[:skip_modules]) if handler =~ resource.uri.to_s
+        when Proc      then extend_resource_with_mod_or_string!(resource, mod_name, options[:skip_modules]) if handler.call(resource)
+        when TrueClass then extend_resource_with_mod_or_string!(resource, mod_name, options[:skip_modules])
         else
           raise IMW::TypeError("A handler must be Regexp, Proc, or true")
         end
       end
+      options[:use_modules].each { |mod_name| extend_resource_with_mod_or_string!(resource, mod_name, options[:skip_modules]) }
       resource
     end
     
@@ -257,31 +292,15 @@ module IMW
     #
     # @param [Module, String] mod_or_string the module or string
     # representing a module to extend the resource with
-    def self.extend_resource_with_mod_or_string! resource, mod_or_string
+    #
+    # @param [Array<Module,String>] skip_modules modules to exclude
+    def self.extend_resource_with_mod_or_string! resource, mod_or_string, skip_modules
+      return if skip_modules.include?(mod_or_string)
       if mod_or_string.is_a?(Module)
         resource.extend(mod_or_string)
       else
-        # Given a string "Mod::SubMod::SubSubMod" first split it into
-        # its parts ["Mod", "SubMod", "SubSubMod"] and then begin
-        # class_eval'ing them in order so that each is class_eval'd in
-        # the scope of the one before it.
-        #
-        # There is almost certainly a better way to do this.
-        # mod_names = mod_or_string.to_s.split('::')
-        # mods = []
-        # mod_names.each_with_index do |name, index|
-        #   if index == 0
-        #     mods << IMW.class_eval(name)
-        #   else
-        #     begin
-        #       mods << class_eval(name)
-        #     rescue NameError
-        #       mods << mods[index - 1].class_eval(name)
-        #     end
-        #   end
-        # end
-        # resource.extend(mods.last)
-        resource.extend(IMW.class_eval(mod_or_string))
+        m = IMW.class_eval(mod_or_string)
+        resource.extend(m) unless skip_modules.include?(m)
       end
     end    
   end

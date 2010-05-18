@@ -1,5 +1,5 @@
 require File.dirname(__FILE__) + "/../../spec_helper"
-require File.dirname(__FILE__) + "/../archive_spec"
+require File.dirname(__FILE__) + "/../archives_spec"
 require File.dirname(__FILE__) + "/../compressed_files_spec"
 
 describe IMW::Archives::Targz do

@@ -39,7 +39,12 @@ module IMW
 
       # Create an archive of the given +input_paths+.
       #
-      # @param [String, IMW::Resource] input_paths the paths to add to this archive
+      # The input paths must be strings and will be shell-escaped
+      # before further processing.  This means you cannot use a shell
+      # glob!
+      #
+      # @param [String] input_paths the paths to add to this archive
+      # @return [IMW::Resource] the resutling archive
       def create *input_paths
         should_have_archive_setting!("Cannot create archive #{path}", :program, :create)
         IMW.system archive_settings[:program], archive_settings[:create], path, *input_paths.flatten
@@ -48,24 +53,32 @@ module IMW
 
       # Append to this archive the given +input_paths+.
       #
-      # @param [String, IMW::Resource] input_paths the paths to add to this archive
+      # The input paths must be strings and will be shell-escaped
+      # before further processing.  This means you cannot use a shell
+      # glob!
+      #
+      # @param [String] input_paths the paths to add to this archive
+      # @return [IMW::Resource] the resutling archive      
       def append *input_paths
-        should_have_archive_setting!("Cannot append to archive #{path}", :append)
+        should_have_archive_setting!("Cannot append to archive #{path}", :program, :append)
         IMW.system archive_settings[:program], archive_settings[:append], path, *input_paths.flatten
         self
       end
 
       # Extract the files from this archive to the current directory.
+      #
+      # @return [IMW::Resource] this archive
       def extract
         should_exist!("Cannot extract archive.")        
         should_have_archive_setting!("Cannot extract archive #{path}", :extract, [:unarchving_program, :program])
         program = archive_settings[:unarchiving_program] || archive_settings[:program]
         IMW.system program, archive_settings[:extract], path
+        self
       end
 
       # Return a (sorted) list of contents in this archive.
       #
-      # @return [Array] a list of paths in the archive.
+      # @return [Array<String>] a list of paths in the archive.
       def contents
         should_exist!("Cannot list archive contents.")
         should_have_archive_setting!("Cannot list archive #{path}", :list, [:unarchiving_program, :program])

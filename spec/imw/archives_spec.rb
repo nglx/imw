@@ -20,7 +20,6 @@ require File.join(File.dirname(__FILE__),'../spec_helper')
 # variable should be defined OUTSIDE a before block.
 
 share_examples_for "an archive of files" do
-  include Spec::Matchers::IMW
 
   before do
     @root = File.join(IMWTest::TMP_DIR, 'an_archive_of_files_shared_example_group')
@@ -40,6 +39,10 @@ share_examples_for "an archive of files" do
     @archive.should contain_paths_like(@initial_directory, :relative_to => @root)
   end
 
+  it "returns an IMW resource when creating" do
+    @archive.create(*Dir[@initial_directory + '/**/*']).class.should == IMW::Resource
+  end
+
   if @cannot_append
     it "cannot append to an archive which already exists" do
       @archive.create(*Dir[@initial_directory + "/**/*"])
@@ -56,7 +59,12 @@ share_examples_for "an archive of files" do
       @archive.append(*Dir[@appending_directory + "/**/*"])    
       @archive.should contain_paths_like(@appending_directory, :relative_to => @root)
     end
+
+    it "returns an IMW resource when appending" do
+      @archive.append(*Dir[@appending_directory + "/**/*"]).class.should == IMW::Resource
+    end
   end
+  
 
   it "can extract files which match the original ones it archived" do
     @archive.create(*Dir[@initial_directory + "/**/*"])

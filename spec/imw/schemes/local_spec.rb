@@ -3,13 +3,13 @@ require File.join(File.dirname(__FILE__),'../../spec_helper')
 describe IMW::Schemes::Local::Base do
 
   it "should not extend a local file with LocalDirectory" do
-    @file = IMW::Resource.new('foo.txt', :skip_modules => true)
+    @file = IMW::Resource.new('foo.txt', :no_modules => true)
     @file.should_not_receive(:extend).with(IMW::Schemes::Local::LocalDirectory)
     @file.extend_appropriately!
   end
 
   it "should not extend a local directory with LocalFile" do
-    @dir = IMW::Resource.new(IMWTest::TMP_DIR, :skip_modules => true)
+    @dir = IMW::Resource.new(IMWTest::TMP_DIR, :no_modules => true)
     @dir.should_not_receive(:extend).with(IMW::Schemes::Local::LocalFile)
     @dir.extend_appropriately!
   end
@@ -17,6 +17,13 @@ describe IMW::Schemes::Local::Base do
   it "should correctly resolve relative paths" do
     IMW.open('foobar').dirname.should == IMWTest::TMP_DIR
   end
+
+  it "should be able to return its directory as an IMW object" do
+    IMW.open('/path/to/file').dir.path.should == '/path/to'
+    IMW.open('/').dir.path.should == '/'
+  end
+
+  
 end
 
 describe IMW::Schemes::Local::LocalFile do
@@ -93,6 +100,13 @@ describe IMW::Schemes::Local::LocalDirectory do
     @dir.resources.map(&:class).uniq.first.should == IMW::Resource
   end
 
+  describe 'can package itself to' do
+    ['tar', 'tar.bz2', 'tar.gz', 'zip', 'rar'].each do |extension|
+      it "a #{extension} archive" do
+        @dir.package("package.#{extension}").exist?.should be_true # FIXME should explicitly check paths are correct in archive
+      end
+    end
+  end
 end
 
 

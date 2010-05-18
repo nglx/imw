@@ -14,7 +14,6 @@ require File.join(File.dirname(__FILE__),'../spec_helper')
 # registered handler.
 
 share_examples_for "a compressed file" do
-  include Spec::Matchers::IMW
 
   before do
     @root = File.join(IMWTest::TMP_DIR, 'a_compressed_file_shared_example_group')

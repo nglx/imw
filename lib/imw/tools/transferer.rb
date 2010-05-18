@@ -11,15 +11,27 @@ module IMW
         raise IMW::PathError.new("Source and destination have the same URI: #{@source.uri}") if @source.uri.to_s == @destination.uri.to_s
       end
 
+      # Transfer source to destination.
+      #
+      # For local transfer, will raise errors unless the necessary
+      # paths exist.
       def transfer!
         if source.is_local? 
-          source.should_exist!("Cannot copy") # don't bother checking for remote resources
-          source_scheme = 'file'              # make sure it isn't blank
+          source.should_exist!("Cannot #{action}") 
+          source_scheme = 'file'                   
         else
           source_scheme = source.scheme
         end
-        destination_scheme = destination.is_local? ? 'file' : destination.scheme
+        
+        if destination.is_local?
+          destination.dir.should_exist!("Cannot #{action}")          
+          destination_scheme = 'file'
+        else
+          destination_scheme = destination.scheme
+        end
+        
         method             = "#{source_scheme}_to_#{destination_scheme}"
+        
         if respond_to?(method)
           send(method)
         else
@@ -43,7 +55,8 @@ module IMW
       #
 
       def file_to_file
-        FileUtils.send(action, source.path, destination.path)
+        fu_action = (action == :cp && source.is_directory?) ? :cp_r : action
+        FileUtils.send(fu_action, source.path, destination.path)
       end
 
       #

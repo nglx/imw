@@ -7,8 +7,7 @@ describe IMW::Schemes::Remote::RemoteFile do
 
   before do
     # skip modules or else it will automatically become HTML!
-    @file = IMW.open('http://www.google.com', :skip_modules => true)
-    @file.extend(IMW::Schemes::Remote::Base)
+    @file = IMW.open('http://www.google.com', :skip_modules => ["Schemes::HTTP", "Formats::HTML"])
   end
 
   describe 'with the file' do

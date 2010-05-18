@@ -57,6 +57,7 @@ module IMW
   # which will work fine since +flags+ will automatically be flattend.
   def self.system *commands
     stripped_commands = commands.flatten.map { |command| command.to_s unless command.blank? }.compact
+    IMW.announce_if_verbose(stripped_commands.join(" "))
     Kernel.system(*stripped_commands)
     raise IMW::SystemCallError.new($?.dup, commands.join(' ')) unless $?.success?
   end

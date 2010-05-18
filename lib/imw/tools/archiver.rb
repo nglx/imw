@@ -65,7 +65,7 @@ module IMW
 
       attr_accessor :name, :local_inputs, :remote_inputs
 
-      def initialize name, raw_inputs
+      def initialize name, *raw_inputs
         @name   = name
         self.inputs = raw_inputs
       end
@@ -73,12 +73,12 @@ module IMW
       # Set the inputs for this archiver.
       #
       # @param [String, IMW::Resource] new_inputs the inputs to archive, local or remote
-      def inputs= new_inputs
+      def inputs= raw_inputs
         @local_inputs, @remote_inputs = [], []
-        new_inputs.each do |obj|
-          input = obj.is_a?(IMW::Resource) ? obj : IMW.open(obj)  # take either paths/URIs or IMW::Resource objects
+        raw_inputs.flatten.each do |raw_input|
+          input = IMW.open(raw_input)
           if input.is_local?
-            @local_inputs << (input.directory? ? input.resources : input)  # recurse through directories
+            @local_inputs << input
           else
             @remote_inputs << input
           end
@@ -133,17 +133,21 @@ module IMW
           new_path      = File.join(dir, existing_file.basename)
           case
           when existing_file.is_archive?
+            IMW.announce_if_verbose("Extracting #{existing_file}...")
             FileUtils.cd(dir) do
               existing_file.extract
             end
           when existing_file.is_compressed?
+            IMW.announce_if_verbose("Decompressing #{existing_file}...")
             existing_file.cp(new_path).decompress!
           else
+            IMW.announce_if_verbose("Copying #{existing_file}...")
             existing_file.cp(new_path)
           end
         end
         
         remote_inputs.each do |remote_input|
+          IMW.announce_if_verbose("Downloading #{remote_input}...")
           remote_input.cp(File.join(dir, remote_input.effective_basename))
         end
       end        
@@ -199,7 +203,7 @@ module IMW
         output = IMW.open(output)
         FileUtils.mkdir_p(output.dirname) unless File.exist?(output.dirname)        
         output.rm!                        if output.exist?
-        FileUtils.cd(tmp_dir) { IMW.open(output.basename).create(*Dir["#{name}/**/*"]).mv(output.path) }
+        FileUtils.cd(tmp_dir) { IMW.open(output.basename).create(name).mv(output.path) }
         add_processing_error "Archiver: couldn't create archive #{output.path}" unless output.exists?
         output
       end

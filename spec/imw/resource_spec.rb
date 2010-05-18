@@ -4,7 +4,7 @@ describe IMW::Resource do
 
   describe "handling missing methods" do
     before do
-      @resource = IMW::Resource.new('/home/foof.txt', :skip_modules => true)
+      @resource = IMW::Resource.new('/home/foof.txt', :no_modules => true)
     end
 
     it "should return false when querying with a method that isn't defined" do
@@ -28,7 +28,7 @@ describe IMW::Resource do
   describe "parsing various and sundry URIs should correctly parse a" do
     
     before do
-      IMW::Resource.should_receive(:extend_resource!).with(an_instance_of(IMW::Resource))
+      IMW::Resource.should_receive(:extend_resource!).with(an_instance_of(IMW::Resource), {})
     end
 
     it "local file path" do
@@ -69,9 +69,36 @@ describe IMW::Resource do
 
   it "should open a URI without attempting to extend with modules if so asked" do
     IMW::Resource.should_not_receive(:extend_resource!)
-    IMW::Resource.new("/path/to/some/file.txt", :skip_modules => true)
+    IMW::Resource.new("/path/to/some/file.txt", :no_modules => true)
   end
-   
+
+  describe "extending resources with specific modules" do
+    before do 
+      @resource = IMW::Resource.new('http://www.infochimps.com/data', :no_modules => true)
+    end
+
+    it "should use a specific module when asked with a string" do
+      IMW::Resource.extend_resource!(@resource, :use_modules => ["Formats::Csv"])
+      @resource.resource_modules.should include(IMW::Formats::Csv)
+    end
+
+    it "should use a specific module when asked with a module" do
+      IMW::Resource.extend_resource!(@resource, :use_modules => [IMW::Formats::Csv])
+      @resource.resource_modules.should include(IMW::Formats::Csv)
+    end
+
+    it "should not use a specific module when asked with a string" do
+      IMW::Resource.extend_resource!(@resource, :skip_modules => ["Schemes::HTTP"])
+      @resource.resource_modules.should_not include(IMW::Schemes::HTTP)
+    end
+
+    it "should not use a specific module when asked with a module" do
+      IMW::Resource.extend_resource!(@resource, :skip_modules => [IMW::Schemes::HTTP])
+      @resource.resource_modules.should_not include(IMW::Schemes::HTTP)
+    end
+    
+  end
+
 end
 
 

@@ -33,6 +33,14 @@ module IMW
 
 EOF
 
+        opts.on('-v', '--verbose', "Print verbose output") do
+          IMW.verbose = true      # class level, see IMW::Runner.verbose?
+        end
+
+        opts.on('-d', '--skip-dependencies', "Execute given tasks without invoking dependencies first") do
+          options[:execute] = true
+        end
+
         opts.on('-l', '--list', "List datasets in repository") do
           options[:list] = true
         end
@@ -49,7 +57,8 @@ EOF
     end
 
     def require_files
-      Dir['*.imw'].each { |path| load File.expand_path(path) }      
+      Dir['*.imw'].each { |path| load File.expand_path(path) }
+      Dir['*.rb'].each { |path| require path.gsub(/\.rb$/,'') }
       options[:requires].each do |path|
         IMW.open(path) do |requireable|
           if requireable.directory?
@@ -67,19 +76,13 @@ EOF
     end
 
     def handles
-      require 'set'
-      matched_handles = Set.new
       if options[:selectors].blank?
-        matched_handles += IMW.repository.keys
+        IMW.repository.keys.sort
       else
-        keys = IMW.repository.keys
-        unless keys.empty?
-          options[:selectors].each do |selector|
-            matched_handles += keys.find_all { |key| key =~ Regexp.new(selector) }
-          end
-        end
+        IMW.repository.handles.map do |handle|
+          handle if options[:selectors].all? { |selector| handle.to_s =~ Regexp.new(selector) }
+        end.compact.sort
       end
-      matched_handles.to_a.sort
     end
 
     def datasets
@@ -93,7 +96,7 @@ EOF
 
     def run_task!
       datasets.each do |dataset|
-        dataset[task].invoke
+        dataset[task].send(options[:execute] ? :execute : :invoke)
       end
       exit
     end

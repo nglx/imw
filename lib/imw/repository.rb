@@ -4,6 +4,7 @@ module IMW
   # command-line +imw+ tool.
   class Repository < Hash
     alias_method :datasets, :values
+    alias_method :handles,  :keys
   end
   
 end

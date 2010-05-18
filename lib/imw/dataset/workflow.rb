@@ -148,7 +148,6 @@ module IMW
       @options = OpenStruct.new(DEFAULT_OPTIONS)
       define_initialize_task
       define_workflow_tasks
-      define_workflow_task_methods
       define_clean_task
       define_tasks
     end
@@ -186,16 +185,11 @@ module IMW
       define_workflow_task({:package => [:fix]},                "Package dataset in final form."          )
     end
 
-    # Dynamically define methods for each of the workflow steps which
-    # act as shorcuts for accessing the corresponding tasks.
-    def define_workflow_task_methods
-      workflow_steps.each do |step|
-        self.class.class_eval <<RUBY
-          def #{step} deps, &block
-            self[step].enhance(step => deps, &block)
-          end
-RUBY
-      end
-    end
+
+    def rip(deps=nil, &block);     self[:rip].enhance(deps, &block);     end
+    def parse(deps=nil, &block);   self[:parse].enhance(deps, &block);   end
+    def fix(deps=nil, &block);     self[:fix].enhance(deps, &block);     end
+    def package(deps=nil, &block); self[:package].enhance(deps, &block); end
+
   end
 end

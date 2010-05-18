@@ -2,10 +2,14 @@ require File.dirname(__FILE__) + "/../../spec_helper"
 
 describe IMW::Tools::Transferer do
   before do
-    @local  = IMW.open("foobar.txt")
-    @http   = IMW.open("http://www.google.com")
-    @hdfs   = IMW.open("hdfs:///path/to/foobar.txt")
-    @s3     = IMW.open("s3://mybucket/foo/bar")
+    @dir     = IMW.open("dir")
+    @new_dir = IMW.open("new_dir")
+    @nested  = IMW.open('new_dir/nested.txt')
+    @nested_dir = IMW.open('new_dir/nested')
+    @local   = IMW.open("foobar.txt")
+    @http    = IMW.open("http://www.google.com")
+    @hdfs    = IMW.open("hdfs:///path/to/foobar.txt")
+    @s3      = IMW.open("s3://mybucket/foo/bar")
   end
 
   it "should raise an error unless the action is one of :cp, :copy, :mv :move, or :mv!" do
@@ -22,25 +26,91 @@ describe IMW::Tools::Transferer do
   end
 
   describe "transfering local files" do
+
+    before do
+      IMWTest::Random.file @local.path
+    end
+    
     it "should raise an error if the source doesn't exist" do
+      @local.rm!
       lambda { IMW::Tools::Transferer.new(:cp, @local, 'barbaz.txt').transfer! }.should raise_error(IMW::PathError)
     end
 
+    it "should raise an error if the directory of the destination doesn't exist" do
+      lambda { IMW::Tools::Transferer.new(:cp, @local, @nested).transfer! }.should raise_error(IMW::PathError)
+    end
+
     it "can copy a local file" do
-      IMWTest::Random.file @local.path
       IMW::Tools::Transferer.new(:cp, @local, 'barbaz.txt').transfer!
       @local.exist?.should be_true
       IMW.open('barbaz.txt').exist?.should be_true
     end
 
+    it "can copy a local file to a directory" do
+      FileUtils.mkdir(@dir.path)
+      IMW::Tools::Transferer.new(:cp, @local, @dir).transfer!
+      IMW.open(File.join(@dir.path, @local.basename)).exist?.should be_true
+    end
+
     it "can move a local file" do
-      IMWTest::Random.file @local.path 
       IMW::Tools::Transferer.new(:mv, @local, 'barbaz.txt').transfer!
       @local.exist?.should be_false
       IMW.open('barbaz.txt').exist?.should be_true
     end
 
+    it "can move a local file to a directory" do
+      FileUtils.mkdir(@dir.path)
+      IMW::Tools::Transferer.new(:mv, @local, @dir).transfer!
+      IMW.open(File.join(@dir.path, @local.basename)).exist?.should be_true
+      @local.exist?.should be_false
+    end
+    
+
   end
+
+  describe "transfering local directories" do
+
+    before do
+      IMWTest::Random.directory_with_files @dir.path
+      @dir = @dir.reopen
+    end
+    
+    it "should raise an error if the source doesn't exist" do
+      @dir.rm_rf!
+      lambda { IMW::Tools::Transferer.new(:cp, @dir, @new_dir).transfer! }.should raise_error(IMW::PathError)
+    end
+
+    it "should raise an error if the directory of the destination doesn't exist" do
+      lambda { IMW::Tools::Transferer.new(:cp, @dir, @nested_dir).transfer! }.should raise_error(IMW::PathError)
+    end
+
+    it "can copy a local directory" do
+      IMW::Tools::Transferer.new(:cp, @dir, @new_dir).transfer!
+      @dir.exist?.should be_true
+      @new_dir.exist?.should be_true
+    end
+
+    it "can move a local directory" do
+      IMW::Tools::Transferer.new(:mv, @dir, @new_dir).transfer!
+      @dir.exist?.should be_false
+      @new_dir.exist?.should be_true
+    end
+
+    it "can copy a local directory to an existing directory" do
+      FileUtils.mkdir(@new_dir.path)
+      IMW::Tools::Transferer.new(:cp, @dir, @nested_dir).transfer!
+      @dir.exist?.should be_true
+      @nested_dir.exist?.should be_true
+    end
+
+    it "can move a local directory to an existing directory" do
+      FileUtils.mkdir(@new_dir.path)
+      IMW::Tools::Transferer.new(:mv, @dir, @nested_dir).transfer!
+      @dir.exist?.should_not be_true
+      @nested_dir.exist?.should be_true
+    end
+  end
+  
 
   describe "transferring HTTP files" do
     it "can copy a remote file to a local path" do

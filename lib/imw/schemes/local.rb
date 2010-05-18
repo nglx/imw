@@ -58,6 +58,13 @@ module IMW
         def mv new_uri
           IMW::Tools::Transferer.new(:mv, self, new_uri).transfer!
         end
+
+        # Return the directory of this resource.
+        #
+        # @return [IMW::Resource]
+        def dir
+          IMW.open(dirname)
+        end
         
       end
 
@@ -155,6 +162,7 @@ module IMW
           FileUtils.rmdir path
           self
         end
+        alias_method :rmdir!, :rmdir
 
         # Delete this directory recursively.
         #
@@ -163,6 +171,7 @@ module IMW
           FileUtils.rm_rf path
           self
         end
+        alias_method :rm_rf!, :rm_rf
 
         # Return a list of paths relative to this directory which match
         # the +selector+.  Works just like Dir[].
@@ -208,6 +217,38 @@ module IMW
           all_contents.map do |path|
             IMW.open(path) unless File.directory?(path)
           end.compact
+        end
+
+        # Package the contents of this directory to an archive at
+        # +package_path+.
+        #
+        # @param [String, IMW::Resource] package_path
+        # @return [IMW::Resource] the new package
+        def package package_path
+          temp_package = IMW.open(File.join(dirname, File.basename(package_path)))
+          FileUtils.cd(dirname) { temp_package.create(basename) }
+          temp_package.path == File.expand_path(package_path) ? temp_package : temp_package.mv(package_path)
+        end
+        alias_method :package!, :package
+
+        # Change the working directory to this local directory.
+        #
+        # If passed a black, execute the block in this directory and
+        # then change back to the initial directory.
+        #
+        # This method works the same as FileUtils.cd.
+        def cd &block
+          FileUtils.cd(path, &block)
+        end
+
+        # Create this directory.
+        #
+        # No error if the directory already exists.
+        #
+        # @return [IMW::Resource] this directory
+        def create
+          FileUtils.mkdir_p(path) unless exist?
+          self
         end
 
       end
