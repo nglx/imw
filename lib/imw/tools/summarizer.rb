@@ -105,7 +105,6 @@ module IMW
         end
       end
 
-
       # Return the amount of data corresponding to each extension.
       #
       # @return [Hash]
