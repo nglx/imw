@@ -121,6 +121,7 @@ module IMW
       # Remove the +tmp_dir+ entirely, getting rid of all temporary
       # files.
       def clean!
+        IMW.announce_if_verbose("Cleaning temporary directory #{tmp_dir}...")
         FileUtils.rm_rf(tmp_dir)
       end
 
