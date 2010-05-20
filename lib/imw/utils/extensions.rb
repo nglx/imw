@@ -58,8 +58,9 @@ module IMW
   def self.system *commands
     stripped_commands = commands.flatten.map { |command| command.to_s unless command.blank? }.compact
     IMW.announce_if_verbose(stripped_commands.join(" "))
-    Kernel.system(*stripped_commands)
+    exit_code = Kernel.system(*stripped_commands)
     raise IMW::SystemCallError.new($?.dup, commands.join(' ')) unless $?.success?
+    exit_code
   end
 end
 
