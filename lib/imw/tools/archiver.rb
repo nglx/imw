@@ -183,11 +183,11 @@ module IMW
       #
       # @param [String, IMW::Resource] output the path to the output package
       # @param [Hash] options
-      # @return [RuntimeError, IMW::Resource] either the completed package or the error which was raised
+      # @return [StandardError, IMW::Resource] either the completed package or the error which was raised
       def package output, options={}
         begin
           package! output, options={}
-        rescue => e
+        rescue StandardError => e
           return e
         end
       end
