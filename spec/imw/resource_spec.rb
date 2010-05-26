@@ -99,6 +99,32 @@ describe IMW::Resource do
     
   end
 
+  describe "registering a new handler" do
+    after do
+      IMW::USER_DEFINED_HANDLERS.delete_if { true }
+    end
+
+    it "should raise an error if the module given isn't a module or string" do
+      lambda { IMW.register_handler 3,     // }.should     raise_error(IMW::ArgumentError)
+      lambda { IMW.register_handler "IMW", // }.should_not raise_error(IMW::ArgumentError)
+      lambda { IMW.register_handler IMW,   // }.should_not raise_error(IMW::ArgumentError)
+    end
+
+    it "should raise an error if the handler given isn't a Regexp, Proc, or true" do
+      lambda { IMW.register_handler IMW, 3                     }.should     raise_error(IMW::ArgumentError)
+      lambda { IMW.register_handler IMW, /foo/                 }.should_not raise_error(IMW::ArgumentError)
+      lambda { IMW.register_handler IMW, Proc.new { |r| true } }.should_not raise_error(IMW::ArgumentError)
+      lambda { IMW.register_handler IMW, true                  }.should_not raise_error(IMW::ArgumentError)      
+    end
+
+    it "should use a valid handler when appropriate" do
+      NewModule = Module.new
+      IMW.register_handler NewModule, /\.foo$/
+      IMW.open('/path/to/something.foo').resource_modules.should include(NewModule)
+    end
+
+  end
+
 end
 
 

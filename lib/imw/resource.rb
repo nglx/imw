@@ -27,7 +27,7 @@ module IMW
   # @param [Regexp, Proc, true] handler
   def self.register_handler mod, handler
     raise IMW::ArgumentError.new("Module must be either a Module or String")       unless mod.is_a?(Module)    || mod.is_a?(String)
-    raise IMW::ArgumentError.new("Handler must be either a Regexp, Proc, or true") unless handler.is_a?(Regxp) || handler.is_a?(Proc) || handler == true
+    raise IMW::ArgumentError.new("Handler must be either a Regexp, Proc, or true") unless handler.is_a?(Regexp) || handler.is_a?(Proc) || handler == true
     self::USER_DEFINED_HANDLERS << [mod, handler]
   end
 
