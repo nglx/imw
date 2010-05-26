@@ -4,35 +4,27 @@ module IMW
     # Defines methods for reading and writing JSON data.
     module Json
 
+      include Enumerable
+
       # Return the content of this resource.
       #
-      # Will try to be smart about iterating over the data when
-      # passed a block.
-      #
-      # - if the outermost JSON data structure is an array, then
-      #   yield each element
-      #
-      # - if the outermost JSON data structure is a mapping, then
-      #   yield each key, value pair
-      #
-      # - otherwise just yield the structure
+      # Will pass a block to the outermost JSON data structure's each
+      # method.
       #
       # @return [Hash, Array, String, Fixnum] whatever the JSON contained
       def load &block
         require 'json'
         json = JSON.parse(read)
         if block_given?
-          case json
-          when Array
-            json.each      { |obj| yield obj }
-          when Hash
-            json.each_pair { |key, value| yield key, value }
-          else
-            yield json
-          end
+          json.each(&block)
         else
           json
         end
+      end
+
+      # Iterate over the elements in the JSON.
+      def each &block
+        load(&block)
       end
 
       # Dump the +data+ into this resource.  It must be opened for

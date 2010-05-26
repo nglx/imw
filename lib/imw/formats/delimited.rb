@@ -11,6 +11,8 @@ module IMW
     # @abstract
     module Delimited
 
+      include Enumerable
+
       attr_accessor :delimited_settings
 
       # Return the data in this delimited resource as an array of
@@ -25,11 +27,9 @@ module IMW
         FasterCSV.parse(read, delimited_options, &block)
       end
 
-      # Map each row in this delimited resource.
-      #
-      # @yield [Array] each row of the data
-      def map &block
-        load.map(&block)
+      # Call +block+ with each row in this delimited resource.
+      def each &block
+        load(&block)
       end
 
       # Dump an array of arrays into this resource.

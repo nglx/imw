@@ -18,16 +18,4 @@ describe IMW::Formats::Csv do
     IMW.open('test.csv').load[1].last.should == "4"
   end
 
-  it "should yield each row when load is given a block" do
-    @sample.load do |row|
-      row.class.should == Array
-      break
-    end
-  end
-
-  it "can map each row with a block" do
-    @sample.map do |row|
-      row.first
-    end.class.should == Array
-  end
 end

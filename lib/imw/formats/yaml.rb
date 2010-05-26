@@ -4,37 +4,29 @@ module IMW
     # Provides methods for reading and writing YAML data.
     module Yaml
 
+      include Enumerable
+
       # Return the content of this resource.
       #
-      # Will try to be smart about iterating over the data when
-      # passed a block.
-      #
-      # - if the outermost YAML data structure is an array, then
-      #   yield each element
-      #
-      # - if the outermost YAML data structure is a mapping, then
-      #   yield each key, value pair
-      #
-      # - otherwise just yield the structure
+      # Will pass a block to the outermost YAML data structure's each
+      # method.
       #
       # @return [Hash, Array, String, Fixnum] whatever the YAML contained
       def load &block
         require 'yaml'
-        yaml = YAML.load(read)
+        yaml = YAML.load(io)
         if block_given?
-          case yaml
-          when Array
-            yaml.each      { |obj| yield obj }
-          when Hash
-            yaml.each_pair { |key, value| yield key, value }
-          else
-            yield yaml
-          end
+          yaml.each(&block)
         else
           yaml
         end
       end
 
+      # Iterate over the elements in the YAML.
+      def each &block
+        load(&block)
+      end
+      
       # Dump the +data+ into this resource.  It must be opened for
       # writing.
       #
