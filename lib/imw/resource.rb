@@ -6,6 +6,31 @@ module IMW
   # URI handlers to IMW.
   USER_DEFINED_HANDLERS = [] unless defined?(USER_DEFINED_HANDLERS)
 
+  # Register a new resource handler which dynamically extends a new
+  # IMW::Resource with the given module +mod+.
+  #
+  # +handler+ must be one of
+  #
+  # 1. Regexp 
+  # 2. Proc 
+  # 3. +true+
+  #
+  # In case (1), if the regular expression matches the resource's URI
+  # then the module (+mod+) will be used to extend the resource.
+  #
+  # In case (2), if the Proc returns a value other than +false+ or
+  # +nil+ then the module will be used.
+  #
+  # In case (3), the module will be used.
+  #
+  # @param [String, Module] mod
+  # @param [Regexp, Proc, true] handler
+  def self.register_handler mod, handler
+    raise IMW::ArgumentError.new("Module must be either a Module or String")       unless mod.is_a?(Module)    || mod.is_a?(String)
+    raise IMW::ArgumentError.new("Handler must be either a Regexp, Proc, or true") unless handler.is_a?(Regxp) || handler.is_a?(Proc) || handler == true
+    self::USER_DEFINED_HANDLERS << [mod, handler]
+  end
+
   # A resource can be anything addressable via a URI.  Examples
   # include local files, remote files, webpages, &c.
   #
