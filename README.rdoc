@@ -1,5 +1,5 @@
 
-= Overview
+= What is the Infinite Monkeywrench?
 
 The Infinite Monkeywrench (IMW) is a Ruby frameworks to simplify the
 tasks of acquiring, extracting, transforming, loading, and packaging
@@ -23,7 +23,7 @@ data.  It has the following goals:
 * Let you incorporate your own tools wherever you choose to.
 
 The Infinite Monkeywrench is a powerful tool but it is not always the
-right one to use.  IMW is **not** designed for
+right tool.  IMW is **not** designed for
 
 * Scraping vast amounts of data (use Wuclan[http://github.com/infochimps/wuclan] and Monkeyshines[http://github.com/infochimps/monkeyshines])
 
@@ -33,14 +33,14 @@ right one to use.  IMW is **not** designed for
 
 * Visualization
 
-= Setup
+= Installation
 
 IMW is hosted on Gemcutter[http://gemcutter.org] so it's easy to install.
 
-You'll have to set up Gemcutter if you haven't already
+You'll have to add <tt>http://gemcutter.org</tt> to your gem sources
+if it isn't there already:
 
-  $ sudo gem install gemcutter
-  $ gem tumble
+  $ gem sources -a http://gemcutter.org
 
 and then install IMW
 
@@ -59,49 +59,82 @@ _anything_ with a URI and you create one using IMW.open.
 
   csv     = IMW.open('/path/to/my_data.csv')
   html    = IMW.open('http://www.infochimps.com')
-  tar_bz2 = IMW.open(
 
 IMW dynamically extends a resource with modules appropriate to it when
 you open it.  In the above case, +csv+ would be automatically extended
 by the IMW::Resources::Formats::Csv module, among others:
 
   csv.resource_modules
-  => [IMW::Resources::LocalObj, IMW::Resources::LocalFile, IMW::Resources::Compressible, IMW::Resources::Formats::Csv]
+  => [IMW::Schemes::Local::Base, IMW::Schemes::Local::LocalFile, IMW::CompressedFiles::Compressible, IMW::Formats::Csv]
 
 while +html+ will use a different set
 
   html.resource_modules
-  => [IMW::Resources::LocalObj, IMW::Resources::LocalFile, IMW::Resources::Compressible, IMW::Resources::Formats::Csv]
-
+  => [IMW::Schemes::Remote::Base, IMW::Schemes::Remote::RemoteFile, IMW::Schemes::HTTP, IMW::Formats::Html]
 
 Consult the documentation for the modules a resource uses to learn
 what it can do.
 
-Since resources are built around the idea of URIs, you can explicitly i
+== Including/Excluding Resource Modules
 
-== Manipulating Paths
+You can exercise finer control of the resource modules IMW will extend
+a given resource with by passing the <tt>:as</tt> and <tt>:without</tt>.
 
-You can p
+  IMW.open('http://www.infochimps.com/some_raw_data', :without => [IMW::Formats::Html]).resource_modules
+  => [IMW::Schemes::Remote::Base, IMW::Schemes::Remote::RemoteFile, IMW::Schemes::HTTP]
+
+  IMW.open('http://www.infochimps.com', :as => [IMW::Formats::Json]).resource_modules
+  => [IMW::Schemes::Remote::Base, IMW::Schemes::Remote::RemoteFile, IMW::Schemes::HTTP, IMW::Formats::Json]
+
+You can also pass <tt>:no_modules</tt> to not use any resource
+modules.
+
+== Handlers and Custom Resource Modules
+
+IMW chooses which resource modules to extend an IMW::Resource by
+iterating through an array of handlers, passing the resource to the
+handler, and letting the handler's response (true/false) determine
+whether or not to extend the resource with the module accompanying the
+handler.
+
+You can hook into this process by defining your own handlers.  To
+define a handler which should extend with +MyModule+ any resource with
+a URI ending with <tt>.xxx</tt>
+
+  IMW::Resource.register_handler MyModule, /\.xxx$/
+
+You can also use a Proc instead of a Regexp for more control.  If the
+result output of the Proc called with a resource is evaluates true
+then the resource will be extended by +MyModule+.
+
+  IMW::Resource.register_handler MyModule, Proc.new { |resource| resource.is_local? && resource.path =~ /\.xxx$/ }
+
+= Manipulating Paths
 
 IMW holds a registry of paths that you can define on the fly or store
-in a configuration file.
+in a configuration file.  Defining paths once in the registry and then
+referring to them forever after by name helps keep your code flexible
+as well as portable.
 
-  IMW.add_path(:dropbox, "/var/www/public/dropbox")
-  IMW.path_to(:dropbox)  #=> "/var/www/public/dropbox"
+  IMW.add_path(:dropbox, "/var/www/public")
+  IMW.path_to(:dropbox)
+  => "/var/www/public"
 
-You can combine paths together dynamically.
+You can combine named references together dynamically.
 
-  IMW.add_path(:raw, "/data/raw")
-  IMW.path_to(:raw, "my/dataset") #=> "/data/raw/my/dataset"  
-  IMW.add_path(:rejects, :raw, "rejects")
-  IMW.path_to(:rejects) #=> "/data/raw/rejects"
+  IMW.add_path(:raw, :dropbox, "raw")
+  IMW.path_to(:raw)
+  => "/var/www/public/raw"
+  IMW.path_to(:raw, "my/dataset")
+  => "/var/www/public/raw/my/dataset
 
 Altering one path will update others
 
-  IMW.add_path(:raw, "/data2/raw")
-  IMW.path_to(:rejects) #=> "/data2/raw/rejects", not "/data/raw/rejects"
+  IMW.add_path(:dropbox, "/data") # redefines :raw
+  IMW.path_to(:raw, "my/dataset)
+  => "/data/raw/my/dataset" # not /var/www/public/raw/my/dataset
 
-== Files & Directories
+= Files & Directories
 
 Use IMW.open to open files.  The object returned by IMW.open obeys the
 usual semantics of a File object but it has new methods to manipulate
@@ -146,20 +179,21 @@ Files can readily be opened, read, and downloaded from the Internet
 
 == Archives & Compressed Files  
 
-IMW works with a variety of archiving and compression programs (see
-IMW::EXTERNAL_PROGRAMS) to make packaging/unpackaging data easy.
+IMW works with a variety of archiving and compression programs to make
+packaging/unpackaging data easy.
 
   bz2   = IMW.open('/path/to/big_file.bz2')
   zip   = IMW.open('/path/to/archive.zip')
   targz = IMW.open('/path/to/archive.tar.gz')
 
-  # IMW recognizes files by extension
-  bz2.archive?      # false
-  bz2.compressed?   # true
-  zip.archive?      # true
-  zip.compressed?   # false
-  targz.archive?    # true
-  targz.compressed? # true
+IMW recognizes file properties by extension
+
+  bz2.is_archive?      # false
+  bz2.is_compressed?   # true
+  zip.is_archive?      # true
+  zip.is_compressed?   # false
+  targz.is_archive?    # true
+  targz.is_compressed? # true
 
   # decompress or compress files
   big_file = bz2.decompress! # skip the ! to preserve the original
@@ -170,53 +204,113 @@ IMW::EXTERNAL_PROGRAMS) to make packaging/unpackaging data easy.
   tarbz2.extract # no need to decompress first
   new_tarbz2 = IMW.open!('/new/archive.tar').create(['/path1', '/path/2']).compress!
 
-== Data Formats
+== Parsing and Emitting Data
 
-IMW encourages you to work with data as Ruby objects as much as
+IMW encourages you to work with native Ruby data structures as much as
 possible by providing methods to parse common data formats directly
-into Ruby.
+into Arrays, Hashes and Strings.
 
-The actual parsing is always handled by a separate library appropriate
-for the data format so it will be fast and, if you're familiar with
-the library, you can use many functions of the library directly on the
-object returned by IMW.open.
+Some data formats (CSV, JSON, YAML) have a structure which trivially
+maps to Arrays, Hashes, and Strings and so these formats can
+immediately be parsed.
 
-IMW uses classes (defined in IMW::Files) to interface with each data
-type.  The choice of class is determined by the extension of the path
-supplied to IMW.open.
+Other formats (XML, HTML, flat files, &c.) use data structures which
+do not map as readily to Arrays, Hashes, and Strings and so these will
+have to be parsed first.
 
-  IMW.open('file.csv')  #=> IMW::Files::Csv
-  IMW.open('file.xml')  #=> IMW::Files::Xml
-  IMW.open('file.html') #=> IMW::Files::Html
+=== Ruby-like Data Formats
 
-  # default choice will be a text file
-  IMW.open('strange_filename.wuzz') #=> IMW::Files::Text
+These include delimited formats such as CSV and TSV as well as
+"restricted tree-like" formats like JSON and YAML.
 
-  # but you force a particular choice
-  IMW.open('strange_filename.wuzz', :as => :csv)  #=> IMW::Files::Csv
+For the case of delimited data, consider the following CSV file:
 
-Some formats are extremely regular (CSV's, JSON, YAML, &c.) and can
-immediately be converted to simple Ruby objects.  Other formats (flat
-files, HTML, XML, &c.) require parsing before they can be
-unambiguously converted to Ruby objects.
+  ID,Name,Genus,Species
+  001,Gray-bellied Night Monkey,Aotus,lemurinus
+  002,Panamanian Night Monkey,Aotus,zonalis
+  003,Hernández-Camacho's Night Monkey,Aotus,jorgehernandezi
+  004,Gray-handed Night Monkey,Aotus,griseimembra
+  005,Hershkovitz's Night Monkey,Aotus,hershkovitzi
+  006,Brumback's Night Monkey,Aotus,brumbacki
+  007,Three-striped Night Monkey,Aotus,trivirgatus
+  008,Spix's Night Monkey,Aotus,vociferans
+  009,Malaysian Lar Gibbon,Hylobates,lar lar
+  010,Carpenter's Lar Gibbon,Hylobates,lar carpenteri
 
-As an example, consider flat, delimited files.  They are extremely
-regular and IMW uses FasterCSV to automatically parse them into nested
-arrays, the only sensible and unambiguous Ruby representation of their
-data:
+It trivially maps to an Array of Arrays:  
 
-  delimit1 = IMW.open('/path/to/csv') # IMW::Files::Csv
-  delimit1.entries #=> array of arrays of entries
-  delimit1.each do |row|
-    # passes in parsed rows
-    ...
-  end
+  data = IMW.open('/path/to/monkeys.csv').load
+  puts data.class
+  => Array
+  puts data.first.class
+  => Array
+  data.each { |row| puts row.inspect }
+  => ["ID", "Name", "Genus", "Species"]
+     ["001", "Gray-bellied Night Monkey", "Aotus", "lemurinus"]
+     ["002", "Panamanian Night Monkey", "Aotus", "zonalis"]
+     ...
+     ["010", "Carpenter's Lar Gibbon", "Hylobates", "lar carpenteri"]
 
-  # if there's a funny delimiter, it can be passed as an option (in
-  # this case identical to what would be passed to FasterCSV under the
-  # hood
-  delimit2 = IMW.open('/path/to/file.csv', :col_sep => " ")
-  
+Conversely, any array of arrays trivially maps to a delimited file.
+Here we write out all rows where the genus is _Hylobates_ to a TSV
+file:
+
+  hylobates = data.find_all { |row| row[2] == 'Hylobates' }
+  hylobates.dump('/path/to/monkeys.tsv')
+
+IMW automatically formats the output as TSV and writes it to the
+specified path.
+
+Similarly, restricted tree-like formats like JSON and YAML, which map
+cleanly onto Hashes, Arrays, and Strings, can also be automatically
+parsed and emitted by IMW.
+
+Consider a YAML version of the above CSV data:
+
+  - id: 001
+    name: Gray-bellied Night Monkey
+    genus: Aotus
+    species: lemurinus
+  - id: 002
+    name: Panamanian Night Monkey
+    genus: Aotus
+    species: zonalis
+  - id: 003
+    name: Hernández-Camacho's Night Monkey
+    genus: Aotus
+    species: jorgehernandezi
+  ...
+  - id: 010
+    name: Carpenter's Lar Gibbon
+    genus: Hylobates
+    species: lar carpenteri
+
+This trivially maps to an Array of Hashes and so we can perform the
+exact same filtration for YAML and JSON as we did for CSV and TSV (in
+a one-liner!):
+
+  data      = IMW.open('/path/to/monkeys.yaml').load
+  hylobates = data.map{ |monkey| monkey['genus'] == 'Hylobates' }
+  hylobates.dump('/path/to/monkeys.json')
+
+Resources in these Ruby-like data formats also extend themselves with
+Enumerable so goodies like +map+, +find_all+, &c. are available.  This
+enables converting YAML to JSON with a one-liner:
+
+  IMW.open('/path/to/monkeys.yaml').find_all { |monkey| monkey['genus'] == 'Hylobates' }.dump('/path/to/monkeys.json')
+
+=== Parsing More General Data Formats
+
+Some data formats are structured but do not map readily to Hashes,
+Arrays, and Strings (XML, HTML, &c.) while other data formats lack
+structure or have a peculiar structure (flat files in arbitrary
+syntax).
+
+In both these cases the data needs to be parsed before it's usable.
+For the XML and HTML type data formats, IMW uses Hpricot and the
+IMW::Parsers::HtmlParser for parsing.  For flat files, IMW provides
+the IMW::Parsers::LineParser and the IMW::Parsers::RegexpParser.
+
 HTML files, on the other hand, are more complex and typically have to
 be parsed before being converted to plain Ruby objects:
 
@@ -245,17 +339,11 @@ rip::
   from the web, obtain it by querying databases, or use other services
   like rsync, ftp, &c. to pull it in from another computer.
 
-extract::
-
-  Ripped data is often compressed or otherwise archived and needs to
-  be extracted.  It may also be sliced in many ways (excluding certain
-  years, say) to reduce the volume to only what is required.
-
 parse::
 
   Data is parsed into Ruby objects and stored.
 
-munge::
+fix::
 
   All the parsed data is combined, reconciled, and further processed
   into a final form.
@@ -268,7 +356,7 @@ package::
 Not all datasets 
 
 
-== Datasets
+= Datasets
 
 == Tasks & Dependencies
 
