@@ -203,6 +203,7 @@ module IMW
       raise IMW::Error.new([message, "No path defined for #{self.inspect} extended by #{resource_modules.join(' ')}"].compact.join(', '))          unless respond_to?(:path)
       raise IMW::Error.new([message, "No exist? method defined for #{self.inspect} extended by #{resource_modules.join(' ')}"].compact.join(', ')) unless respond_to?(:exist?)
       raise IMW::PathError.new([message, "#{path} does not exist"].compact.join(', '))                                                             unless exist?
+      self
     end
 
     # Open a copy of this resource.

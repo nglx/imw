@@ -9,7 +9,7 @@ module IMW
   LOG_TIMEFORMAT       = "%Y-%m-%d %H:%M:%S " unless defined?(LOG_TIMEFORMAT)
 
   # Default verbosity
-  VERBOSE = false
+  VERBOSE = false unless defined?(VERBOSE)
 
   class << self; attr_accessor :log, :verbose end
 
@@ -36,7 +36,7 @@ module IMW
   def self.announce *events
     options = events.flatten.extract_options!
     options.reverse_merge! :level => Logger::INFO
-    IMW.log.add options[:level], events.join("\n")
+    IMW.log.add options[:level], "IMW: " + events.join("\n")
   end
   def self.announce_if_verbose *events
     announce(*events) if IMW.verbose?

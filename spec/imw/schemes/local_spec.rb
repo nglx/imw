@@ -96,7 +96,7 @@ describe IMW::Schemes::Local::LocalDirectory do
     @dir.all_contents.size.should == 4
   end
 
-  it "can list its contents recursively as IMW::Resource objects" do
+  it "can list its contents as IMW::Resource objects" do
     @dir.resources.map(&:class).uniq.first.should == IMW::Resource
   end
 

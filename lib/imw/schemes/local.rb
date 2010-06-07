@@ -65,7 +65,7 @@ module IMW
         def dir
           IMW.open(dirname)
         end
-        
+
       end
 
       # Defines methods for appropriate for a local file.
@@ -142,6 +142,29 @@ module IMW
           end
           io.close unless options[:persist]
         end
+
+        # Return a summary of properties of this local file.
+        #
+        # Returned properties include
+        # - basename
+        # - size
+        # - extension
+        # - snippet
+        def summary
+          {
+            :basename  => basename,
+            :size      => size,
+            :extension => extension,
+            :snippet   => snippet
+          }
+        end
+
+        # Return a 1024-char snippet from this local file.
+        #
+        # @return [Array<String>]
+        def snippet
+          io.read(1024)
+        end
       end
 
       # Defines methods for manipulating the contents of a local
@@ -182,13 +205,6 @@ module IMW
           Dir[File.join(path, selector)]
         end
 
-        # Return a list of all paths directly within this directory.
-        #
-        # @return [Array]
-        def contents
-          self['*']
-        end
-
         # Does this directory contain +obj+?
         #
         # @param [String, IMW::Resource] obj
@@ -202,6 +218,13 @@ module IMW
           false
         end
 
+        # Return a list of all paths directly within this directory.
+        #
+        # @return [Array<String>]
+        def contents
+          self['*']
+        end
+
         # Return all paths within this directory, recursively.
         #
         # @return [Array<String>]
@@ -209,11 +232,17 @@ module IMW
           self['**/*']
         end
 
-        # Return all resources within this directory, i.e. - all paths
-        # converted to IMW::Resource objects.
+        # Return all resources directly within this directory.
         #
         # @return [Array<IMW::Resource>]
         def resources
+          contents.map { |path| IMW.open(path) }
+        end
+
+        # Return all resources within this directory, recursively.
+        #
+        # @return [Array<IMW::Resource>]
+        def all_resources
           all_contents.map do |path|
             IMW.open(path) unless File.directory?(path)
           end.compact
@@ -249,6 +278,26 @@ module IMW
         def create
           FileUtils.mkdir_p(path) unless exist?
           self
+        end
+
+        # Return a hash summarizing this directory with a key
+        # <tt>:contents</tt> containing an array of hashes summarizing
+        # this directories contents.
+        #
+        # The directory summary includes the following information
+        # - basename
+        # - size
+        # - num_files
+        # - contents
+        #
+        # @return [Hash]
+        def summary
+          {
+            :basename  => basename,
+            :size      => size,
+            :num_files => contents.length,
+            :contents  => resources.map { |resource| resource.summary }
+          }
         end
 
       end
