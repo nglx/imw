@@ -71,6 +71,13 @@ module IMW
         IMW.open(decompressed_path)
       end
 
+      # Compressed files should not return snippets.
+      #
+      # @return [nil]
+      def snippet
+        nil
+      end
+
       # Decompress this file in its present directory, overwriting any
       # existing files while keeping the original compressed file.
       #

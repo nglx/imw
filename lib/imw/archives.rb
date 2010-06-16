@@ -37,6 +37,13 @@ module IMW
         true
       end
 
+      # Archives should not return snippets.
+      #
+      # @return [nil]
+      def snippet
+        nil
+      end
+
       # Create an archive of the given +input_paths+.
       #
       # The input paths must be strings and will be shell-escaped

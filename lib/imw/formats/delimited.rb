@@ -45,6 +45,21 @@ module IMW
         io.close unless options[:persist]
         self
       end
+
+      # Return a 10-line sample of this file.
+      #
+      # @return [Array<Array>]
+      def snippet
+        require 'fastercsv'
+        returning([]) do |rows|
+          row_num = 1
+          FasterCSV.new(io, delimited_options).each do |row|
+            break if row_num > 10
+            rows << row
+            row_num += 1
+          end
+        end
+      end
     end
 
     module Csv
