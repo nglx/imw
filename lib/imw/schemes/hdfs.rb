@@ -27,7 +27,7 @@ module IMW
       # @param [String, IMW::Resource] new_uri
       # @return [IMW::Resource] the new resource
       def cp new_uri
-        IMW::Transforms::Transferer.new(:cp, self, new_uri).transfer!
+        IMW::Tools::Transferer.new(:cp, self, new_uri).transfer!
       end
 
       # Move this resource to the +new_uri+.
@@ -35,7 +35,7 @@ module IMW
       # @param [String, IMW::Resource] new_uri
       # @return [IMW::Resource] the new resource
       def mv new_uri
-        IMW::Transforms::Transferer.new(:mv, self, new_uri).transfer!
+        IMW::Tools::Transferer.new(:mv, self, new_uri).transfer!
       end
 
       # Delete this resource from the HDFS.
