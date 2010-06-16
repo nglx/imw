@@ -161,7 +161,7 @@ module IMW
 
         # Return a 1024-char snippet from this local file.
         #
-        # @return [Array<String>]
+        # @return [String]
         def snippet
           io.read(1024)
         end
