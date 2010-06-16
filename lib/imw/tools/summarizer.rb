@@ -42,7 +42,13 @@ module IMW
       #
       # @return [Array<Hash>]
       def summary
-        @summary ||= inputs.map(&:summary)
+        @summary ||= inputs.map do |input|
+          if input.respond_to?(:summary)
+            input.summary
+          else
+            {}
+          end
+        end
       end
 
       protected
@@ -58,7 +64,7 @@ module IMW
           input.should_exist!("Cannot summarize.")
         end
         @resources = inputs.map do |input|
-          input.is_directory? ? input.all_resources : input
+          input.is_local? && input.is_directory? ? input.all_resources : input
         end.compact.flatten
       end
 
