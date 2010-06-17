@@ -66,7 +66,7 @@ module IMW
         self.action      = action
         self.source      = source
         self.destination = destination
-        raise IMW::PathError.new("Source and destination have the same URI: #{source}") if source.uri.to_s == destination.uri.to_s
+        raise IMW::PathError.new("Source and destination have the same URI: #{source}") if self.source.uri.to_s == self.destination.uri.to_s
       end
 
       # Transfer source to destination.
