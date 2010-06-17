@@ -7,65 +7,77 @@ describe IMW::Tools::Transferer do
     @nested  = IMW.open('new_dir/nested.txt')
     @nested_dir = IMW.open('new_dir/nested')
     @local   = IMW.open("foobar.txt")
+    @dest    = IMW.open("barbaz.txt")
     @http    = IMW.open("http://www.google.com")
     @hdfs    = IMW.open("hdfs:///path/to/foobar.txt")
     @s3      = IMW.open("s3://mybucket/foo/bar")
+    IMWTest::Random.file(@local.path)
   end
 
   it "should raise an error unless the action is one of :cp, :copy, :mv :move, or :mv!" do
-    IMW::Tools::Transferer.new(:cp,   @local, @http).should be
-    IMW::Tools::Transferer.new(:copy, @local, @http).should be
-    IMW::Tools::Transferer.new(:mv,   @local, @http).should be
-    IMW::Tools::Transferer.new(:move, @local, @http).should be
-    IMW::Tools::Transferer.new(:mv!,  @local, @http).should be
-    lambda { IMW::Tools::Transferer.new(:foobar, @local, @http) }.should raise_error(IMW::ArgumentError)
+    @transferer = IMW::Tools::Transferer.new(:cp, @local, @http)
+    @transferer.action = :cp
+    @transferer.action = :copy
+    @transferer.action = :mv
+    @transferer.action = :mv!    
+    @transferer.action = :move
+    lambda { @transferer.action = :foobar }.should raise_error(IMW::ArgumentError)
   end
 
   it "should raise an error if the source and the destination have the same URI" do
     lambda { IMW::Tools::Transferer.new(:cp, @local, @local) }.should raise_error(IMW::PathError)
   end
 
+  it "should print a log message when IMW is verbose" do
+    IMW.should_receive(:announce_if_verbose).with("Copying #{@local} to #{@dest}")
+    IMW.verbose = true
+    IMW::Tools::Transferer.new(:cp, @local, @dest).transfer!
+  end
+  
   describe "transfering local files" do
 
     before do
       IMWTest::Random.file @local.path
+      @transferer = IMW::Tools::Transferer.new(:cp, @local, @dest)
     end
     
     it "should raise an error if the source doesn't exist" do
       @local.rm!
-      lambda { IMW::Tools::Transferer.new(:cp, @local, 'barbaz.txt').transfer! }.should raise_error(IMW::PathError)
+      lambda { @transferer.source = @local }.should raise_error(IMW::PathError)
     end
 
     it "should raise an error if the directory of the destination doesn't exist" do
-      lambda { IMW::Tools::Transferer.new(:cp, @local, @nested).transfer! }.should raise_error(IMW::PathError)
+      lambda { @transferer.destination = @nested }.should raise_error(IMW::PathError)
     end
 
     it "can copy a local file" do
-      IMW::Tools::Transferer.new(:cp, @local, 'barbaz.txt').transfer!
+      @transferer.transfer!
       @local.exist?.should be_true
-      IMW.open('barbaz.txt').exist?.should be_true
+      @dest.exist?.should  be_true
     end
 
     it "can copy a local file to a directory" do
       FileUtils.mkdir(@dir.path)
-      IMW::Tools::Transferer.new(:cp, @local, @dir).transfer!
+      @transferer.destination = @dir
+      @transferer.transfer!
       IMW.open(File.join(@dir.path, @local.basename)).exist?.should be_true
     end
 
     it "can move a local file" do
-      IMW::Tools::Transferer.new(:mv, @local, 'barbaz.txt').transfer!
+      @transferer.action = :mv
+      @transferer.transfer!
       @local.exist?.should be_false
-      IMW.open('barbaz.txt').exist?.should be_true
+      @dest.exist?.should  be_true
     end
 
     it "can move a local file to a directory" do
       FileUtils.mkdir(@dir.path)
-      IMW::Tools::Transferer.new(:mv, @local, @dir).transfer!
+      @transferer.action = :mv
+      @transferer.destination = @dir
+      @transferer.transfer!
       IMW.open(File.join(@dir.path, @local.basename)).exist?.should be_true
       @local.exist?.should be_false
     end
-    
-
   end
 
   describe "transfering local directories" do
