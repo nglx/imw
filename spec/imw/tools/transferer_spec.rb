@@ -29,8 +29,8 @@ describe IMW::Tools::Transferer do
   end
 
   it "should print a log message when IMW is verbose" do
+    IMW.stub!(:verbose).and_return(:true)
     IMW.should_receive(:announce_if_verbose).with("Copying #{@local} to #{@dest}")
-    IMW.verbose = true
     IMW::Tools::Transferer.new(:cp, @local, @dest).transfer!
   end
   
