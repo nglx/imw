@@ -5,13 +5,13 @@ module IMW
 
     # Handlers for archives.
     HANDLERS = [
-                ["Archives::Tarbz2",     Proc.new { |r| r.is_local? && r.path =~ /\.tar\.bz2$/  } ],
-                ["Archives::Tarbz2",     Proc.new { |r| r.is_local? && r.path =~ /\.tbz2$/      } ],
-                ["Archives::Targz",      Proc.new { |r| r.is_local? && r.path =~ /\.tar\.gz$/   } ],
-                ["Archives::Targz",      Proc.new { |r| r.is_local? && r.path =~ /\.tgz$/       } ],
-                ["Archives::Tar",        Proc.new { |r| r.is_local? && r.path =~ /\.tar$/       } ],
-                ["Archives::Rar",        Proc.new { |r| r.is_local? && r.path =~ /\.rar$/       } ],
-                ["Archives::Zip",        Proc.new { |r| r.is_local? && r.path =~ /\.zip$/       } ]
+                ["Archives::Tarbz2",     Proc.new { |r| r.is_local? && r.path =~ /\.tar\.bz2$/i  } ],
+                ["Archives::Tarbz2",     Proc.new { |r| r.is_local? && r.path =~ /\.tbz2$/i      } ],
+                ["Archives::Targz",      Proc.new { |r| r.is_local? && r.path =~ /\.tar\.gz$/i   } ],
+                ["Archives::Targz",      Proc.new { |r| r.is_local? && r.path =~ /\.tgz$/i       } ],
+                ["Archives::Tar",        Proc.new { |r| r.is_local? && r.path =~ /\.tar$/i       } ],
+                ["Archives::Rar",        Proc.new { |r| r.is_local? && r.path =~ /\.rar$/i       } ],
+                ["Archives::Zip",        Proc.new { |r| r.is_local? && r.path =~ /\.zip$/i       } ]
                ]
 
     autoload :Rar,    'imw/archives/rar'
@@ -35,13 +35,6 @@ module IMW
       # @return [true, false]
       def is_archive?
         true
-      end
-
-      # Archives should not return snippets.
-      #
-      # @return [nil]
-      def snippet
-        nil
       end
 
       # Create an archive of the given +input_paths+.

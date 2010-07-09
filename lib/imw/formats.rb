@@ -14,16 +14,16 @@ module IMW
     # Handlers which augment a resource with data format specific
     # methods.
     HANDLERS = [
-                [ "Formats::Csv",   /\.csv$/    ],
-                [ "Formats::Tsv",   /\.tsv$/    ],
-                [ "Formats::Excel", /\.xslx?$/  ],
-                [ "Formats::Json",  /\.json$/   ],
-                [ "Formats::Xml",   /\.xml$/    ],
-                [ "Formats::Xsl",   /\.xsl$/    ],                         
-                [ "Formats::Html",  /\.html?$/  ],
-                [ "Formats::Xhtml", /\.xhtml?$/ ],
-                [ "Formats::Rdf",   /\.rdf?$/   ],
-                [ "Formats::Yaml",  /\.ya?ml$/  ]
+                [ "Formats::Csv",   /\.csv$/i    ],
+                [ "Formats::Tsv",   /\.tsv$/i    ],
+                [ "Formats::Excel", /\.xslx?$/i  ],
+                [ "Formats::Json",  /\.json$/i   ],
+                [ "Formats::Xml",   /\.xml$/i    ],
+                [ "Formats::Xsl",   /\.xsl$/i    ],                         
+                [ "Formats::Html",  /\.html?$/i  ],
+                [ "Formats::Xhtml", /\.xhtml?$/i ],
+                [ "Formats::Rdf",   /\.rdf?$/i   ],
+                [ "Formats::Yaml",  /\.ya?ml$/i  ]
                ]
   end
 end

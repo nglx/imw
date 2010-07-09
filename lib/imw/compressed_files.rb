@@ -10,9 +10,9 @@ module IMW
     # well as the IMW::CompressedFiles::Compressible module for
     # compressing regular files.
     HANDLERS = [
-                ["CompressedFiles::Compressible", Proc.new { |r| r.is_local? && r.is_file? && r.path != /\.(bz2|gz|tgz|tbz2)$/                       } ],
-                ["CompressedFiles::Gz",           Proc.new { |r| r.is_local? && r.path =~ /\.gz$/  && r.path !~ /\.tar\.gz$/  && r.path !~ /\.tgz$/  } ],
-                ["CompressedFiles::Bz2",          Proc.new { |r| r.is_local? && r.path =~ /\.bz2$/ && r.path !~ /\.tar\.bz2$/ && r.path !~ /\.tbz2$/ } ]    
+                ["CompressedFiles::Compressible", Proc.new { |r| r.is_local? && r.is_file? && r.path != /\.(bz2|gz|tgz|tbz2)$/i                         } ],
+                ["CompressedFiles::Gz",           Proc.new { |r| r.is_local? && r.path =~ /\.gz$/i  && r.path !~ /\.tar\.gz$/i  && r.path !~ /\.tgz$/i  } ],
+                ["CompressedFiles::Bz2",          Proc.new { |r| r.is_local? && r.path =~ /\.bz2$/i && r.path !~ /\.tar\.bz2$/i && r.path !~ /\.tbz2$/i } ]    
                ]
 
     # Defines methods for decompressing a compressed file.  This
@@ -69,13 +69,6 @@ module IMW
         program = compression_settings[:decompression_program] || compression_settings[:program]
         FileUtils.cd(dirname) { IMW.system(program, compression_settings[:decompress], path) }
         IMW.open(decompressed_path)
-      end
-
-      # Compressed files should not return snippets.
-      #
-      # @return [nil]
-      def snippet
-        nil
       end
 
       # Decompress this file in its present directory, overwriting any

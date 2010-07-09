@@ -151,20 +151,17 @@ module IMW
         # - extension
         # - snippet
         def summary
-          {
+          data = {
             :basename  => basename,
             :size      => size,
-            :extension => extension,
-            :snippet   => snippet
+            :extension => extension
           }
+          if respond_to?(:snippet)
+            data[:snippet] = snippet
+          end
+          data
         end
 
-        # Return a 1024-char snippet from this local file.
-        #
-        # @return [String]
-        def snippet
-          io.read(1024)
-        end
       end
 
       # Defines methods for manipulating the contents of a local
