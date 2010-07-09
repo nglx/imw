@@ -44,7 +44,7 @@ module IMW
       def summary
         @summary ||= inputs.map do |input|
           if input.respond_to?(:summary)
-            input.summary
+            input.summary rescue {}
           else
             {}
           end
