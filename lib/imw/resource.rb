@@ -74,7 +74,14 @@ module IMW
   # accepts all the same arguments as IMW::Resource.new.
   class Resource
 
-    attr_reader :uri, :mode
+    # The URI object associated with this resource.
+    attr_reader :uri
+
+    # The mode in which to access this resource.
+    attr_accessor :mode
+
+    # A copy of the options passed to this resource on initialization.
+    attr_accessor :resource_options
 
     # Create a new resource representing +uri+.
     #
@@ -102,8 +109,9 @@ module IMW
     # @option options [String] mode the mode to open the resource in (will be ignored when inapplicable)
     # @return [IMW::Resource]
     def initialize uri, options={}
-      self.uri = uri
-      @mode    = options[:mode] || 'r'
+      self.uri              = uri
+      self.resource_options = options
+      self.mode             = options[:mode] || 'r'
       extend_appropriately!(options) unless options[:no_modules]
     end
 
@@ -190,6 +198,13 @@ module IMW
     # @return [String]
     def name
       @name ||= extname ? basename[0,basename.length - extname.length] : basename
+    end
+
+    # Returns the user associated with the host of this URI.
+    #
+    # @return [String]
+    def user
+      @user ||= uri.user
     end
 
     def to_s
