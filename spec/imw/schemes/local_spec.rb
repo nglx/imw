@@ -5,13 +5,13 @@ describe IMW::Schemes::Local::Base do
   it "should not extend a local file with LocalDirectory" do
     @file = IMW::Resource.new('foo.txt', :no_modules => true)
     @file.should_not_receive(:extend).with(IMW::Schemes::Local::LocalDirectory)
-    @file.extend_appropriately!
+    IMW::Resource.extend_instance!(@file)
   end
 
   it "should not extend a local directory with LocalFile" do
     @dir = IMW::Resource.new(IMWTest::TMP_DIR, :no_modules => true)
     @dir.should_not_receive(:extend).with(IMW::Schemes::Local::LocalFile)
-    @dir.extend_appropriately!
+    IMW::Resource.extend_instance!(@dir)
   end
 
   it "should correctly resolve relative paths" do
@@ -98,6 +98,57 @@ describe IMW::Schemes::Local::LocalDirectory do
 
   it "can list its contents as IMW::Resource objects" do
     @dir.resources.map(&:class).uniq.first.should == IMW::Resource
+  end
+
+  describe "checking whether it contains other resources" do
+
+    it "should return false for remote paths" do
+      @dir.contains?("http://google.com").should be_false
+    end
+
+    it "should return true for its own path" do
+      @dir.contains?(@dir.path).should be_true
+    end
+
+    it "should return false for a path that doesn't start with its path" do
+      @dir.contains?(File.expand_path('foo')).should be_false
+    end
+
+    it "should return false for a path that starts with its path but doesn't exist" do
+      @dir.contains?(File.expand_path('dir/foo/baz')).should be_false
+    end
+
+    it "should return true for a path that starts with its path and exists" do
+      FileUtils.mkdir_p('dir/foo/baz')
+      @dir.contains?(File.expand_path('dir/foo/baz')).should be_true
+    end
+
+  end
+
+  describe "handling schemata" do
+
+    it "should recognize a YAML schema file" do
+      schemata_path = File.join(@dir.path, 'schema.yaml')
+      IMWTest::Random.file(schemata_path)
+      @dir.schemata_path.should == schemata_path
+    end
+
+    it "should recognize a JSON schema file" do
+      schemata_path = File.join(@dir.path, 'schema.json')
+      IMWTest::Random.file(schemata_path)
+      @dir.schemata_path.should == schemata_path
+    end
+
+    it "should recognize a funny-named YAML schema file" do
+      schemata_path = File.join(@dir.path, 'schema-1838293.yml')
+      IMWTest::Random.file(schemata_path)
+      @dir.schemata_path.should == schemata_path
+    end
+    
+  end
+
+  it "can join with a path" do
+    @dir.join("a", "b/c").to_s.should == File.join(@dir.path, 'a/b/c')
   end
 
   describe 'can package itself to' do

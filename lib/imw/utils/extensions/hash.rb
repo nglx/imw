@@ -201,8 +201,8 @@ class Hash
     terminals
   end
 
-  # Dump the data from this Hash into the given +uri+.
-  def dump uri
-    IMW.open!(uri).dump(self)
+  # Emit the data from this Hash into the given +uri+.
+  def emit uri
+    IMW.open!(uri).emit(self)
   end
 end

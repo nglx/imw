@@ -11,24 +11,30 @@ module IMW
     # files.  Few large files will not cause a problem.
     class Summarizer
 
+      # Options for this Summarizer.
+      attr_accessor :options
+
       # The inputs given to this Summarizer.
       attr_reader :inputs
 
-      # The resources to this Summarizer, calculated recursively from
-      # its +inputs+.
+      # The resources analyzed, calculated recursively from the
+      # +inputs+.
       attr_reader :resources
 
       include IMW::Tools::ExtensionAnalyzer      
 
       # Initialize a new Summarizer with the given +inputs+.
       #
+      # A Hash of options can be given as the last parameter.
+      #
       # @param [Array<String, IMW::Resource>] inputs
       # @return [IMW::Tools::Summarizer]
       def initialize *inputs
-        self.inputs = inputs.flatten
+        self.options = (inputs.last.is_a?(Hash) && inputs.pop) || {}
+        self.inputs  = inputs.flatten
       end
 
-      # Return the total size.
+      # Return the total size of all resources.
       #
       # @return [Integer]
       def total_size
@@ -43,12 +49,24 @@ module IMW
       # @return [Array<Hash>]
       def summary
         @summary ||= inputs.map do |input|
+          input.guess_schema! if input.respond_to?(:guess_schema!)
           if input.respond_to?(:summary)
-            input.summary rescue {}
+            input.summary
           else
-            {}
+            input_summary = {}
+            input_summary[:schema] = schemata[input] if schemata && schemata.describe?(input)
+            input_summary
           end
         end
+      end
+
+      # The schemata employed by this Summarizer.
+      #
+      # It can be set by setting <tt>options[:schemata]</tt>.
+      #
+      # @return [IMW::Metadata::Schemata, nil]
+      def schemata
+        @schemata ||= options[:schemata] && IMW::Metadata::Schemata.load(options[:schemata])
       end
 
       protected

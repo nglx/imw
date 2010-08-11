@@ -27,12 +27,12 @@ module IMW
         load(&block)
       end
       
-      # Dump the +data+ into this resource.  It must be opened for
+      # Emit the +data+ into this resource.  It must be opened for
       # writing.
       #
-      # @param [Hash, String, Array, Fixnum] data the Ruby object to dump
+      # @param [Hash, String, Array, Fixnum] data the Ruby object to emit
       # @option options [true, false] :persist (false) Don't close the IO object after writing
-      def dump data, options={}
+      def emit data, options={}
         require 'yaml'
         write(data.to_yaml)
         io.close unless options[:persist]

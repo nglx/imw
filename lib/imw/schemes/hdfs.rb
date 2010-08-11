@@ -234,7 +234,18 @@ module IMW
       def resources
         contents.map { |path| IMW.open(path) }
       end
-      
+
+      # Return the resource at the base path of this resource joined
+      # to +path+.
+      #
+      #   IMW.open('hdfs:///path/to/dir').join('subdir')
+      #   #=> IMW::Resource at 'hdfs:///path/to/dir/subdir'
+      #
+      # @param [Array<String>] paths
+      # @return [IMW::Resource]
+      def join *paths
+        IMW.open(File.join(stripped_uri.to_s, *paths))
+      end
     end
   end
 end

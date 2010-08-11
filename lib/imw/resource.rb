@@ -1,35 +1,6 @@
-require 'addressable/uri'
+require 'imw/utils/has_uri'
 
 module IMW
-
-  # Define this constant in your configuration file to add your own
-  # URI handlers to IMW.
-  USER_DEFINED_HANDLERS = [] unless defined?(USER_DEFINED_HANDLERS)
-
-  # Register a new resource handler which dynamically extends a new
-  # IMW::Resource with the given module +mod+.
-  #
-  # +handler+ must be one of
-  #
-  # 1. Regexp 
-  # 2. Proc 
-  # 3. +true+
-  #
-  # In case (1), if the regular expression matches the resource's URI
-  # then the module (+mod+) will be used to extend the resource.
-  #
-  # In case (2), if the Proc returns a value other than +false+ or
-  # +nil+ then the module will be used.
-  #
-  # In case (3), the module will be used.
-  #
-  # @param [String, Module] mod
-  # @param [Regexp, Proc, true] handler
-  def self.register_handler mod, handler
-    raise IMW::ArgumentError.new("Module must be either a Module or String")       unless mod.is_a?(Module)    || mod.is_a?(String)
-    raise IMW::ArgumentError.new("Handler must be either a Regexp, Proc, or true") unless handler.is_a?(Regexp) || handler.is_a?(Proc) || handler == true
-    self::USER_DEFINED_HANDLERS << [mod, handler]
-  end
 
   # A resource can be anything addressable via a URI.  Examples
   # include local files, remote files, webpages, &c.
@@ -54,7 +25,7 @@ module IMW
   # The modules extending a particular IMW::Resource instance can be
   # listed as follows
   #
-  #   my_archive.resource_modules #=> [IMW::Local::Base, IMW::Local::File, IMW::Local::Compressible, IMW::Archives::Tarbz2]
+  #   my_archive.modules #=> [IMW::Local::Base, IMW::Local::File, IMW::Local::Compressible, IMW::Archives::Tarbz2]
   #
   # By default, resources are opened for reading.  Passing in the
   # appropriate <tt>:mode</tt> option changes this:
@@ -74,150 +45,72 @@ module IMW
   # accepts all the same arguments as IMW::Resource.new.
   class Resource
 
-    # The URI object associated with this resource.
-    attr_reader :uri
-
     # The mode in which to access this resource.
     attr_accessor :mode
 
     # A copy of the options passed to this resource on initialization.
     attr_accessor :resource_options
 
+    # The dataset to which this resource belongs.
+    attr_accessor :dataset
+
     # Create a new resource representing +uri+.
     #
-    # IMW will automatically extend the resulting IMW::Resourcen
-    # instance with modules appropriate to the given URI.
+    # IMW will automatically extend the resulting IMW::Resource
+    # instance with modules appropriate for the given URI:
     #
     #   r = IMW::Resource.new("http://www.infochimps.com")
-    #   r.resource_modules
+    #   r.modules
     #   => [IMW::Schemes::Remote::Base, IMW::Schemes::Remote::RemoteFile, IMW::Schemes::HTTP, IMW::Formats::Html]
     #
     # You can prevent this altogether by passing in
     # <tt>:no_modules</tt>:
     #
-    #   r = IMW::Resource.new("http://www.infochimps.com")
-    #   r.resource_modules
-    #   => [IMW::Schemes::Remote::Base, IMW::Schemes::Remote::RemoteFile, IMW::Schemes::HTTP, IMW::Formats::Html]
+    #   r = IMW::Resource.new("http://www.infochimps.com", :no_modules => true)
+    #   r.modules
+    #   => []
     #
     # And you can exert more fine-grained control with the
     # <tt>:use_modules</tt> and <tt>:skip_modules</tt> options, see
-    # IMW::Resource.extend_resource! for details.
+    # IMW::Resource.extend_instance! for details.
     #
     # @param [String, Addressable::URI] uri
     # @param [Hash] options
     # @option options [true, false] no_modules
     # @option options [String] mode the mode to open the resource in (will be ignored when inapplicable)
+    # @option options [IMW::Metadata::Schema, Array] schema the schema of this resource
+    # @option options [IMW::Dataset] dataset the dataset to which this resource belongs
     # @return [IMW::Resource]
     def initialize uri, options={}
       self.uri              = uri
       self.resource_options = options
       self.mode             = options[:mode] || 'r'
-      extend_appropriately!(options) unless options[:no_modules]
+      self.dataset          = options[:dataset]  if options[:dataset]
+      self.schema           = options[:schema]   if options[:schema]
+      extend_appropriately!(options)
     end
 
-    # Return the modules this resource has been extended by.
-    #
-    # @return [Array] the modules this resource has been extended by.
-    def resource_modules
-      @resource_modules ||= []
-    end
+    # Provides resources with a wrapped Addressable::URI object.
+    include IMW::Utils::HasURI
 
-    # Works just like Object#extend except it keeps track of the
-    # modules it has extended, see Resource#resource_modules.
-    def extend mod
-      resource_modules << mod
-      super mod
+    # Provides resources with a schema.
+    include IMW::Metadata::Schematized
+    
+    # Gives IMW::Resource instances with the ability to dynamically
+    # extend themselves with modules chosen from a set of handlers
+    # stored by the IMW::Resource class.
+    include IMW::Utils::DynamicallyExtendable
+    [IMW::Schemes::HANDLERS, IMW::CompressedFiles::HANDLERS, IMW::Archives::HANDLERS, IMW::Formats::HANDLERS].each do |handlers|
+      register_handlers *handlers
     end
-
-    # Extend this resource with modules by passing it through a
-    # collection of handlers defined by IMW::Resource.handlers.
-    #
-    # Accepts the same options as Resource.extend_resource!.
-    def extend_appropriately! options={}
-      self.class.extend_resource!(self, options)
-    end
-
-    # Set the URI of this resource by parsing the given +uri+ (if
-    # necessary).
-    #
-    # @param [String, Addressable::URI] uri the uri to parse
-    def uri= uri
-      if uri.is_a?(Addressable::URI)
-        @uri = uri
-      else
-        begin
-          @uri = Addressable::URI.parse(uri.to_s)
-        rescue URI::InvalidURIError
-          @uri = Addressable::URI.parse(URI.encode(uri.to_s))
-          @encoded_uri = true
-        end
-      end
-    end
-
-    # The scheme of this resource.  Will be +nil+ for local resources.
-    #
-    # @return [String]
-    def scheme
-      @scheme ||= uri.scheme
-    end
-
-    # The directory name of this resource's path.
-    #
-    # @return [String]
-    def dirname
-      @dirname  ||= File.dirname(path)
-    end
-
-    # The basename of this resource's path.
-    #
-    # @return [String]
-    def basename
-      @basename ||= File.basename(path)
-    end
-
-    # Returns the extension (INCLUDING the '.') of this resource's
-    # path.  Redefine this in an including class for which this is
-    # weird ('.tar.gz' I'm talking to you...)
-    #
-    # @return [String]
-    def extname
-      @extname ||= File.extname(path)
-    end
-
-    # Returns the extension (WITHOUT the '.') of this resource's path.
-    #
-    # @return [String]
-    def extension
-      @extension ||= extname[1..-1] || ''
-    end
-
-    # Returns the basename of the file with its extension removed
-    #
-    #   IMW.open('/path/to/some_file.tar.gz').name # => some_file
-    #
-    # @return [String]
-    def name
-      @name ||= extname ? basename[0,basename.length - extname.length] : basename
-    end
-
-    # Returns the user associated with the host of this URI.
-    #
-    # @return [String]
-    def user
-      @user ||= uri.user
-    end
-
-    def to_s
-      uri.to_s
-    end
-
+    
     # Raise an error unless this resource exists.
     #
     # @param [String] message an optional message to include
     def should_exist!(message=nil)
-      raise IMW::Error.new([message, "No path defined for #{self.inspect} extended by #{resource_modules.join(' ')}"].compact.join(', '))          unless respond_to?(:path)
-      raise IMW::Error.new([message, "No exist? method defined for #{self.inspect} extended by #{resource_modules.join(' ')}"].compact.join(', ')) unless respond_to?(:exist?)
-      raise IMW::PathError.new([message, "#{path} does not exist"].compact.join(', '))                                                             unless exist?
+      raise IMW::Error.new([message, "No path defined for #{self.inspect} extended by #{modules.join(' ')}"].compact.join(', '))          unless respond_to?(:path)
+      raise IMW::Error.new([message, "No exist? method defined for #{self.inspect} extended by #{modules.join(' ')}"].compact.join(', ')) unless respond_to?(:exist?)
+      raise IMW::PathError.new([message, "#{path} does not exist"].compact.join(', '))                                                    unless exist?
       self
     end
 
@@ -228,7 +121,7 @@ module IMW
     #
     # @return [IMW::Resource] the new (old) resource
     def reopen
-      IMW.open(self.uri.to_s)
+      IMW.open(uri.to_s)
     end
 
     # If +method+ begins with the strings +is+, +on+, or +via+ and
@@ -257,92 +150,9 @@ module IMW
         # querying for a boolean response so answer false
         return false
       else
-        raise IMW::NoMethodError, "undefined method `#{method}' for #{self}, extended by #{resource_modules.join(', ')}"
+        raise IMW::NoMethodError, "undefined method `#{method}' for #{self}, extended by #{modules.join(', ')}"
       end
     end
 
-    # Iterate through IMW::Resource.handlers and extend the given
-    # +resource+ with modules whose handler conditions match the
-    # resource.
-    #
-    # Passing in <tt>:use_modules</tt> or <tt>:skip_modules</tt>
-    # allows overriding the default behavior of handlers.
-    #
-    # @param [IMW::Resource] resource the resource to extend
-    # @param [Hash] options
-    # @option options [Array<String,Module>] use_modules a list of modules used regardless of handlers
-    # @option options [Array<String,Module>] skip_modules a list of modules not to be used regardless of handlers
-    # @return [IMW::Resource] the extended resource
-    def self.extend_resource! resource, options={}
-      options.reverse_merge!(:use_modules => [], :skip_modules => [])
-      handlers.each do |mod_name, handler|
-        case handler
-        when Regexp    then extend_resource_with_mod_or_string!(resource, mod_name, options[:skip_modules]) if handler =~ resource.uri.to_s
-        when Proc      then extend_resource_with_mod_or_string!(resource, mod_name, options[:skip_modules]) if handler.call(resource)
-        when TrueClass then extend_resource_with_mod_or_string!(resource, mod_name, options[:skip_modules])
-        else
-          raise IMW::TypeError("A handler must be Regexp, Proc, or true")
-        end
-      end
-      options[:use_modules].each { |mod_name| extend_resource_with_mod_or_string!(resource, mod_name, options[:skip_modules]) }
-      resource
-    end
-    
-    # A list of handlers to match against each new resource.
-    # 
-    # When an IMW::Resource is instantiated it eventually calls
-    # IMW::Resource.extend_resource! which will iterate through the
-    # handlers in IMW::Resource.handlers, extending the resource with
-    # modules whose handler conditions are satisfied.
-    #
-    # A handler is just an Array with two elements.  The first should be
-    # a module or a string identifying a module.  
-    #
-    # If the second element is a Regexp, the corresponding module will
-    # be used if the regexp matches the resource's URI (as a string)
-    #
-    # If the second element is a Proc, it will be called with the
-    # resource as its only argument and if it returns true then the
-    # module will be used.
-    #
-    # You can define your own handlers by appending them to
-    # IMW::Resource::USER_DEFINED_HANDLERS in your <tt>.imwrc</tt>
-    # file.
-    #
-    # The order in which handlers appear is significant --
-    # IMW::CompressedFiles::HANDLERS must be _before_
-    # IMW::Archives::HANDLERS, for example, because of (say)
-    # <tt>.tar.bz2</tt> files.
-    # 
-    # @return [Array]
-    def self.handlers
-      # order is important!
-      #
-      # 
-      #
-      #CompressedFiles must come before
-      # Archives because of tar.bz2 type files
-      IMW::Schemes::HANDLERS + IMW::CompressedFiles::HANDLERS + IMW::Archives::HANDLERS + IMW::Formats::HANDLERS + USER_DEFINED_HANDLERS
-    end
-
-    protected
-    # Extend +resource+ with +mod_or_string+.  Will work hard to try
-    # and interpret +mod_or_string+ as a module if it's a string.
-    #
-    # @param [IMW::Resource] resource the resource to extend
-    #
-    # @param [Module, String] mod_or_string the module or string
-    # representing a module to extend the resource with
-    #
-    # @param [Array<Module,String>] skip_modules modules to exclude
-    def self.extend_resource_with_mod_or_string! resource, mod_or_string, skip_modules
-      return if skip_modules.include?(mod_or_string)
-      if mod_or_string.is_a?(Module)
-        resource.extend(mod_or_string)
-      else
-        m = IMW.class_eval(mod_or_string)
-        resource.extend(m) unless skip_modules.include?(m)
-      end
-    end    
   end
 end

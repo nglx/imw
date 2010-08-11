@@ -14,6 +14,10 @@ describe IMW::Schemes::S3 do
     it "can generate an S3N url" do
       @resource.s3n_url.should == 's3n://mybucket/foobar/foo.txt'
     end
+
+    it "can join path segments" do
+      @resource.join('a', 'b/c').to_s.should == File.join(@resource.to_s, 'a/b/c')
+    end
   end
   
 end

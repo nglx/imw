@@ -32,7 +32,7 @@ module IMW
       #If an Excel file exists at the location specified by uri then
       #it is opened and can be read out with a subsequent call to
       #load(). Otherwise, a new workbook is created and can be written
-      #to with the dump() method.
+      #to with the emit() method.
       def initialize uri, mode='r', options={}
         self.uri = uri
         @max_lines = options[:max_lines] || 65000
@@ -53,12 +53,12 @@ module IMW
         @sheet.map{|row| row.to_a}
       end
 
-      #Dumps data, which is assumed to be an array of arrays, to a
-      #newly created Excel workbook. Attempting to dump to a book
+      #Emits data, which is assumed to be an array of arrays, to a
+      #newly created Excel workbook. Attempting to emit to a book
       #that already exists will typically result in file corruption.
       #Raises a 'too many lines' error if the number of lines
       #of data exceeds max_lines.
-      def dump data
+      def emit data
         data.each do |line|
           raise "too many lines" if too_many?
           self << line
@@ -93,7 +93,7 @@ module IMW
       #Opens an existing Excel workbook. You shoudn't need to
       #call this directly.
       def get_existing_book
-        @sht_row = @sheet.row_count #would like to be able to dump new data, doesn't work
+        @sht_row = @sheet.row_count #would like to be able to emit new data, doesn't work
         @sht_idx += 1
       end
 

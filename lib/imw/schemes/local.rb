@@ -65,7 +65,7 @@ module IMW
         def dir
           IMW.open(dirname)
         end
-
+        
       end
 
       # Defines methods for appropriate for a local file.
@@ -132,11 +132,11 @@ module IMW
           io.map(&block)
         end
 
-        # Dump +data+ into this file.
+        # Emit +data+ into this file.
         #
-        # @param [String, Array, #each] data object to dump
+        # @param [String, Array, #each] data object to emit
         # @option options [true, false] :persist (false) Don't close the file after writing
-        def dump data, options={}
+        def emit data, options={}
           data.each do |element|  # works if data is an Array or a String
             io.puts(element.to_s)
           end
@@ -159,14 +159,20 @@ module IMW
           if respond_to?(:snippet)
             data[:snippet] = snippet
           end
+          if respond_to?(:schema)
+            data[:schema] = schema
+          end
           data
         end
-
+        
       end
 
       # Defines methods for manipulating the contents of a local
       # directory.
       module LocalDirectory
+
+        # Explicitly set the path to the schemata for this directory.
+        attr_writer :schemata_path
 
         # Is this resource a directory?
         #
@@ -207,11 +213,11 @@ module IMW
         # @param [String, IMW::Resource] obj
         # @return [true, false]
         def contains? obj
-          require 'find'
-          obj_path = obj.is_a?(String) ? obj : obj.path
-          Find.find(path) do |sub_path|
-            return true if sub_path.ends_with?(obj_path)
-          end
+          obj = IMW.open(obj)
+          return false unless obj.is_local?
+          return true  if obj.path == path
+          return false unless obj.path.starts_with?(path)
+          return true  if self[obj.path[path.length..-1]].size > 0
           false
         end
 
@@ -277,6 +283,18 @@ module IMW
           self
         end
 
+        # Return the resource at the base path of this resource joined
+        # to +path+.
+        #
+        #   IMW.open('/path/to/dir').join('subdir')
+        #   #=> IMW::Resource at '/path/to/dir/subdir'
+        #
+        # @param [Array<String>] paths
+        # @return [IMW::Resource]
+        def join *paths
+          IMW.open(File.join(stripped_uri.to_s, *paths))
+        end
+
         # Return a hash summarizing this directory with a key
         # <tt>:contents</tt> containing an array of hashes summarizing
         # this directories contents.
@@ -293,8 +311,54 @@ module IMW
             :basename  => basename,
             :size      => size,
             :num_files => contents.length,
-            :contents  => resources.map { |resource| resource.summary }
+            :contents  => resources.map do |resource|
+              resource.guess_schema! if guess_schema? && resource.respond_to?(:guess_schema!)
+              resource_summary = resource.summary
+              resource_summary[:schema] = schemata[resource] if schemata && schemata.describe?(resource)
+              resource_summary
+            end
           }
+        end
+
+        # Whether or not to have this directory's resources guess
+        # their schema when none is provided.
+        #
+        # @return [true, false]
+        def guess_schema?
+          (!! @guess_schema)
+        end
+
+        # Force this directory's resources to guess at their schemas.
+        #
+        # @return [true]
+        def guess_schema!
+          @guess_schema = true
+        end
+
+        # The path at which this directory's schemata file lives.
+        #
+        # Will default to any file beginning with +schema+ and ending
+        # with a +yaml+ or +json+ extension directly in this
+        # directory.
+        #
+        # @return [String, nil]
+        def schemata_path
+          @schemata_path ||= contents.detect { |path| path =~ /schema.*\.(ya?ml|json)$/ }
+        end
+
+        # Does this directory contain a file providing schemata for
+        # other files within this directory?
+        #
+        # @return [true, false]
+        def schemata?
+          (!! schemata_path)
+        end
+
+        # Return the schemata for this directory.
+        #
+        # @return [IMW::Metadata::Schemata, nil]
+        def schemata
+          @schemata ||= schemata? && Schemata.load(schemata_path)
         end
 
       end

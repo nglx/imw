@@ -116,6 +116,18 @@ module IMW
         destination
       end
 
+      # Return the resource at the base path of this resource joined
+      # to +path+.
+      #
+      #   IMW.open('s3:://bucket/path/to/dir').join('subdir')
+      #   #=> IMW::Resource at 's3://bucket/path/to/dir/subdir'
+      #
+      # @param [Array<String>] paths
+      # @return [IMW::Resource]
+      def join *paths
+        IMW.open(File.join(stripped_uri.to_s, *paths))
+      end
+
       protected
       # Make an S3 connection.
       #

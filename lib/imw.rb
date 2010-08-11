@@ -35,6 +35,7 @@ module IMW
   autoload :Parsers,         'imw/parsers'
   autoload :Dataset,         'imw/dataset'  
   autoload :Repository,      'imw/repository'
+  autoload :Metadata,        'imw/metadata'
 
   # Open a resource at the given +uri+.  The resource will
   # automatically be extended by modules which make sense given the
@@ -47,10 +48,10 @@ module IMW
   #
   # @param  [String, Addressable::URI, IMW::Resource] obj the URI to open
   # @param [Hash] options
-  # @option options [Array<String,Module>] as same as <tt>:use_modules</tt> in IMW::Resource.extend_resource!
-  # @option options [Array<String,Module>] without same as <tt>:skip_modules</tt> in IMW::Resource.extend_resource!  
+  # @option options [Array<String,Module>] as same as <tt>:use_modules</tt> in IMW::Resource.extend_instance!
+  # @option options [Array<String,Module>] without same as <tt>:skip_modules</tt> in IMW::Resource.extend_instance!  
   # @return [IMW::Resource] the resulting resource, property extended for the given URI
-  def self.open obj, options={}
+  def self.open obj, options={}, &block
     return obj if obj.is_a?(IMW::Resource)
     options[:use_modules]  ||= (options[:as]      || [])
     options[:skip_modules] ||= (options[:without] || [])
@@ -93,7 +94,7 @@ module IMW
   #   munge do
   #     IMW.open(path_to(:raw_data)).map do |row|
   #       row if accept?(row)
-  #     end.compact.dump(path_to(:fixd_data))
+  #     end.compact.emit(path_to(:fixd_data))
   #   end
   #
   #   # Compress this new data

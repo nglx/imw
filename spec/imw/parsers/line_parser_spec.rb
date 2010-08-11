@@ -4,7 +4,7 @@ require 'ostruct'
 describe IMW::Parsers::LineParser do
 
   before do
-    @path = File.dirname(__FILE__) + "/../../data/sample.csv"
+    @path = File.join(IMWTest::DATA_DIR, 'formats/delimited/sample.csv')
     @file = File.new(@path)
     @fields = [:id, :name, :genus, :species]
   end

@@ -6,6 +6,7 @@ module IMW
     autoload :HTTP,   'imw/schemes/http'
     autoload :HTTPS,  'imw/schemes/http'
     autoload :HDFS,   'imw/schemes/hdfs'
+    autoload :SQL,    'imw/schemes/sql'
     
     HANDLERS = [
                 ["Schemes::Local::Base",  Proc.new { |resource| resource.scheme == 'file' || resource.scheme.blank?    } ],
@@ -13,7 +14,8 @@ module IMW
                 ["Schemes::S3",        %r{^s3://}i    ],
                 ["Schemes::HTTP",      %r{^http://}i  ],
                 ["Schemes::HTTPS",     %r{^https://}i ],
-                ["Schemes::HDFS",      %r{^hdfs://}i  ]
+                ["Schemes::HDFS",      %r{^hdfs://}i  ],
+                ["Schemes::SQL::Base", %r{^\w+sql://}i ]
                ]
   end
 end

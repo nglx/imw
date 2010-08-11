@@ -39,14 +39,6 @@ module IMW
           @query_string ||= uri.query
         end
 
-        # Return the fragment part of this resource's URI.  Will likely be
-        # +nil+ for local resources.
-        #
-        # @return [String]
-        def fragment
-          @fragment ||= uri.fragment
-        end
-
         # Return the path part of this resource's URI.  Will _not_
         # include the +query_string+ or +fragment+.
         #
@@ -103,8 +95,21 @@ module IMW
 
       module RemoteDirectory
 
+        # Return the resource at the base path of this resource joined
+        # to +path+.
         #
-        # TODO -- bloody everything
+        #   IMW.open('http://example.com/path/to/dir').join('subdir')
+        #   #=> IMW::Resource at 'http://example.com/path/to/dir/subdir'
+        #
+        # @param [Array<String>] paths
+        # @return [IMW::Resource]
+        def join *paths
+          IMW.open(File.join(stripped_uri.to_s, *paths))
+        end
+
+        #
+        # TODO -- bloody everything.  what's the best way to tell if
+        # the remote URL is a directory?
         #
 
         

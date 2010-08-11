@@ -31,9 +31,9 @@ class String
     self.downcase.underscore.to_sym
   end
 
-  # Dump this string into the given +uri+.
-  def dump uri
-    IMW.open!(uri).dump(self)
+  # Emit this string into the given +uri+.
+  def emit uri
+    IMW.open!(uri).emit(self)
   end
 
 end

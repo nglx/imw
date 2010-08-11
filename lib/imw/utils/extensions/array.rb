@@ -107,9 +107,9 @@ class Array
     terminals
   end
 
-  # Dump the data in this array to the resource at the given +uri+.
-  def dump uri
-    IMW.open!(uri).dump(self)
+  # Emit the data in this array to the resource at the given +uri+.
+  def emit uri
+    IMW.open!(uri).emit(self)
   end
 
 end
