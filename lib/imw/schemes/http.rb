@@ -28,7 +28,6 @@ module IMW
         IMW::Tools::Transferer.new(:cp, self, new_uri).transfer!
       end
       
-
       # Return the basename of the URI or <tt>_index</tt> if it's
       # blank, as in the case of <tt>http://www.google.com</tt>.
       #

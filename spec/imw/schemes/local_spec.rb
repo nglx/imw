@@ -37,7 +37,6 @@ describe IMW::Schemes::Local::LocalFile do
     @file.exist?.should be_false
   end
 
-
   it "can read a file" do
     @file.read.size.should > 0
   end
@@ -59,6 +58,12 @@ describe IMW::Schemes::Local::LocalFile do
     @file.map do |line|
       line[0..5]
     end.class.should == Array
+  end
+
+  it "can produce a snippet" do
+    path = IMWTest::DATA_DIR + "/formats/none/sample"
+    # FIXME only look at the first 100 bytes b/c of subsequent non-ascii chars...
+    IMW.open(path).snippet[0..100].should == File.new(path).read(101)
   end
 end
 

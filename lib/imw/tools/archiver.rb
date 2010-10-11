@@ -129,7 +129,8 @@ module IMW
       # directory, readying them for packaging.
       def prepare!
         FileUtils.mkdir_p dir unless File.exist?(dir)
-        
+
+        before_local_inputs
         local_inputs.each do |existing_file|
           new_path      = File.join(dir, existing_file.basename)
           case
@@ -146,11 +147,14 @@ module IMW
             existing_file.cp(new_path)
           end
         end
-        
+        after_local_inputs
+
+        before_remote_inputs
         remote_inputs.each do |remote_input|
           IMW.announce_if_verbose("Downloading #{remote_input}...")
           remote_input.cp(File.join(dir, remote_input.effective_basename))
         end
+        after_remote_inputs
       end        
       
       # Checks to see if all expected files exist in the temporary
@@ -201,14 +205,23 @@ module IMW
       # @return [IMW::Resource] the completed package
       def package! output, options={}
         prepare!                          unless prepared?
+        before_package
         output = IMW.open(output)
         FileUtils.mkdir_p(output.dirname) unless File.exist?(output.dirname)        
         output.rm!                        if output.exist?
         FileUtils.cd(tmp_dir) { IMW.open(output.basename).create(name).mv(output.path) }
         add_processing_error "Archiver: couldn't create archive #{output.path}" unless output.exists?
+        after_package
         output
       end
 
+      #
+      # == Hooks ==
+      #
+      %w[before_local_inputs after_local_inputs before_remote_inputs after_remote_inputs before_package after_package].each do |method|
+        define_method method
+      end
+      
       protected
       def add_processing_error error # :nodoc:
         IMW.logger.warn error      

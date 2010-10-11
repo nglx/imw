@@ -49,24 +49,18 @@ module IMW
       # @return [Array<Hash>]
       def summary
         @summary ||= inputs.map do |input|
-          input.guess_schema! if input.respond_to?(:guess_schema!)
-          if input.respond_to?(:summary)
-            input.summary
-          else
-            input_summary = {}
-            input_summary[:schema] = schemata[input] if schemata && schemata.describe?(input)
-            input_summary
-          end
+          #input.guess_schema! if input.schema.nil? && input.respond_to?(:guess_schema!)
+          input.respond_to?(:summary) ? input.summary : {}
         end
       end
 
-      # The schemata employed by this Summarizer.
+      # The metadata employed by this Summarizer.
       #
-      # It can be set by setting <tt>options[:schemata]</tt>.
+      # It can be set by setting <tt>options[:metadata]</tt>.
       #
-      # @return [IMW::Metadata::Schemata, nil]
-      def schemata
-        @schemata ||= options[:schemata] && IMW::Metadata::Schemata.load(options[:schemata])
+      # @return [IMW::Metadata, nil]
+      def metadata
+        @metadata ||= options[:metadata] && IMW::Metadata.load(options[:metadata])
       end
 
       protected
@@ -79,7 +73,6 @@ module IMW
       def inputs= new_inputs
         @inputs = new_inputs.map do |path_or_resource|
           input = IMW.open(path_or_resource)
-          input.should_exist!("Cannot summarize.")
         end
         @resources = inputs.map do |input|
           input.is_local? && input.is_directory? ? input.all_resources : input

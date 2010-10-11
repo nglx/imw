@@ -4,120 +4,88 @@ module IMW
     # Defines methods for reading and writing Microsoft Excel data.
     module Excel
 
-      attr_accessor :book, :sheet
-
-      def self.extended obj
-        if obj.exist?
-          @book = Spreadsheet.open path
-          @sheet = book.worksheet(0)
-          
-        end
-      end
-      
-
-      def book
-        return @book if @book
-        if exists?
-          @book = Spreadsheet.open(path)
-        else
-          @book = Spreadsheet::Workbook.new
-        end
+      # Ensure that this Excel resource is described by a an ordered
+      # collection of flat fields.
+      def validate_schema!
+        raise IMW::SchemaError.new("#{self.class} resources must be described by an ordered set of flat fields") if schema.any?(&:nested?)
       end
 
-      def sheet
-        @sheet = @book.create_worksheet          
-        @sheet
-      end
-      
-      #If an Excel file exists at the location specified by uri then
-      #it is opened and can be read out with a subsequent call to
-      #load(). Otherwise, a new workbook is created and can be written
-      #to with the emit() method.
-      def initialize uri, mode='r', options={}
-        self.uri = uri
-        @max_lines = options[:max_lines] || 65000
-        @idx = 0
-        @book_idx = 0
-        @sht_idx = 0
-        unless self.exist?
-          make_new_book
-          make_new_sheet
-        else
-          get_existing_book
-        end
-      end
-
-      #Returns the data in an existing workbook as an
-      #array of arrays. Only capable of reading a single sheet.
+      # Return the data in this Excel document as an array of arrays.
+      #
+      # Data from consecutive worksheets will be concatenated into a
+      # single outer array.
+      #
+      # @return [Array<Array>]
       def load
-        @sheet.map{|row| row.to_a}
-      end
-
-      #Emits data, which is assumed to be an array of arrays, to a
-      #newly created Excel workbook. Attempting to emit to a book
-      #that already exists will typically result in file corruption.
-      #Raises a 'too many lines' error if the number of lines
-      #of data exceeds max_lines.
-      def emit data
-        data.each do |line|
-          raise "too many lines" if too_many?
-          self << line
+        require 'spreadsheet'
+        data = []
+        Spreadsheet.open(path).worksheets.each do |worksheet|
+          data += worksheet.map do |row|
+            row.to_a
+          end
         end
-        save unless no_data?
+        data
       end
 
-      #Processes a single line of data and updates internal variables.
-      #You shouldn't need to call this directly.
-      def << line
-        @sheet.row(@sht_row).concat( line )
-        @sht_row += 1
-        @idx += 1
+      # Gives us goodies!  Needs +each+ below.
+      include Enumerable      
+
+      # Yield each row of this Excel document.
+      #
+      # Will loop from one worksheet to the next.
+      #
+      # @yield [Spreadsheet::Excel::Row]
+      def each &block
+        require 'spreadsheet'
+        Spreadsheet.open(path).worksheets.each do |worksheet|
+          worksheet.each(&block)
+        end
       end
 
-      #Instantiates a new Excel workbook in memory. You shouldn't
-      #need to call this directly.
-      def make_new_book
-        @book = Spreadsheet::Workbook.new
-        @book_idx += 1
+      # Return the number of lines in this Excel document.
+      #
+      # Measured across worksheets.
+      #
+      # @return [Integer]
+      def num_lines
+        require 'spreadsheet'
+        Spreadsheet.open(path).worksheets.inject(0) do |sum, worksheet|
+          sum += worksheet.row_count
+        end
       end
 
-      #Makes a new worksheet for a pre-existing Excel workbook.
-      #This should be called after recovering from the
-      #'too many lines' error.
-      def make_new_sheet
-        @sheet = @book.create_worksheet
-        @sht_idx += 1
-        @sht_row = 0 #always start at row 0 in a new sheet
-      end
+      # TODO
+      # 
+      # def emit
+      # end
 
-      #Opens an existing Excel workbook. You shoudn't need to
-      #call this directly.
-      def get_existing_book
-        @sht_row = @sheet.row_count #would like to be able to emit new data, doesn't work
-        @sht_idx += 1
-      end
+      # TODO
+      #
+      # Extract the following methods from delimited into a module and
+      # let both Excel and Delimited use them.
+      #
+      # Or let Excel include Delimited and let it override
+      # appropriately.
+      # 
+      #   headers_in_first_line?
+      #   guess_schema!
+      #
+      #
 
-      #Increments the current sheet to the next one in
-      #an open book. Not necessary at the moment.
-      def incr_sheet
-        @sheet = book.worksheet @sht_idx
-      end
-
-      #There are too many lines if the number of rows attempting
-      #to be written exceeds max_lines.
-      def too_many?
-        @sht_row >= @max_lines
-      end
-
-      #There is no data if the number of rows attempting to be written
-      #is zero.
-      def no_data?
-        @sht_row == 0
-      end
-
-      #Saves the workbook.
-      def save
-        @book.write path
+      # 
+      def snippet
+        require 'spreadsheet'
+        returning([]) do |snip|
+          row_num = 1
+          Spreadsheet.open(path).worksheets.each do |worksheet|
+            worksheet.each do |row|
+              break if row_num > 10
+              snip << row.to_a
+              row_num += 1
+            end
+            break if row_num > 10
+          end
+        end
       end
     end
   end

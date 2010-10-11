@@ -51,9 +51,6 @@ module IMW
     # A copy of the options passed to this resource on initialization.
     attr_accessor :resource_options
 
-    # The dataset to which this resource belongs.
-    attr_accessor :dataset
-
     # Create a new resource representing +uri+.
     #
     # IMW will automatically extend the resulting IMW::Resource
@@ -78,14 +75,12 @@ module IMW
     # @param [Hash] options
     # @option options [true, false] no_modules
     # @option options [String] mode the mode to open the resource in (will be ignored when inapplicable)
-    # @option options [IMW::Metadata::Schema, Array] schema the schema of this resource
-    # @option options [IMW::Dataset] dataset the dataset to which this resource belongs
+    # @option options [IMW::Metadata::Record, Array] schema the schema of this resource
     # @return [IMW::Resource]
     def initialize uri, options={}
       self.uri              = uri
       self.resource_options = options
       self.mode             = options[:mode] || 'r'
-      self.dataset          = options[:dataset]  if options[:dataset]
       self.schema           = options[:schema]   if options[:schema]
       extend_appropriately!(options)
     end
@@ -112,6 +107,13 @@ module IMW
       raise IMW::Error.new([message, "No exist? method defined for #{self.inspect} extended by #{modules.join(' ')}"].compact.join(', ')) unless respond_to?(:exist?)
       raise IMW::PathError.new([message, "#{path} does not exist"].compact.join(', '))                                                    unless exist?
       self
+    end
+
+    # Close this resource.
+    #
+    # Modules should hook into super() as they need to redefine this
+    # method.
+    def close
     end
 
     # Open a copy of this resource.

@@ -1,5 +1,5 @@
 module IMW
-  module Metadata
+  class Metadata
     module Schematized
 
       # The schema for this object.
@@ -12,7 +12,7 @@ module IMW
       # Set a new schema for this object.
       #
       # Will call the object's +validate_schema!+ hook which should
-      # check the schema and take the appropriate action if it's
+      # check the record and take the appropriate action if it's
       # invalid.
       #
       # @param [Array, IMW::Metadata::Schema] new_schema

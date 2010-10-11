@@ -1,4 +1,3 @@
-
 = What is the Infinite Monkeywrench?
 
 The Infinite Monkeywrench (IMW) is a Ruby frameworks to simplify the
@@ -58,18 +57,18 @@ IMW is centered around processing resources.  A resource can be
 _anything_ with a URI and you create one using IMW.open.
 
   csv     = IMW.open('/path/to/my_data.csv')
-  html    = IMW.open('http://www.infochimps.com')
+  html    = IMW.open('http://www.example.com/history/march_2007')
 
 IMW dynamically extends a resource with modules appropriate to it when
 you open it.  In the above case, +csv+ would be automatically extended
 by the IMW::Resources::Formats::Csv module, among others:
 
-  csv.resource_modules
+  csv.modules
   => [IMW::Schemes::Local::Base, IMW::Schemes::Local::LocalFile, IMW::CompressedFiles::Compressible, IMW::Formats::Csv]
 
 while +html+ will use a different set
 
-  html.resource_modules
+  html.modules
   => [IMW::Schemes::Remote::Base, IMW::Schemes::Remote::RemoteFile, IMW::Schemes::HTTP, IMW::Formats::Html]
 
 Consult the documentation for the modules a resource uses to learn

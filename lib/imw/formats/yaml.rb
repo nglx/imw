@@ -31,11 +31,9 @@ module IMW
       # writing.
       #
       # @param [Hash, String, Array, Fixnum] data the Ruby object to emit
-      # @option options [true, false] :persist (false) Don't close the IO object after writing
       def emit data, options={}
         require 'yaml'
         write(data.to_yaml)
-        io.close unless options[:persist]
         self
       end
     end

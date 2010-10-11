@@ -93,6 +93,14 @@ module IMW
           @io ||= open(path, mode)
         end
 
+        # Close this resource's file handle if it exists.
+        def close
+          # explicitly check the @io instance variable b/c self.io
+          # will open up a new handle by default
+          io.close if @io
+          super()
+        end
+
         # Read from this file.
         #
         # @param [Fixnum] length bytes to read
@@ -101,12 +109,26 @@ module IMW
           io.read(length)
         end
 
+        # Read a line from this file.
+        #
+        # @return [String]
+        def readline
+          io.readline
+        end
+
         # Write to this file
         #
         # @param [String, #to_s] text text to write
         # @return [Fixnum] bytes written
         def write text
           io.write text
+        end
+
+        # Write the text with a trailing newline to this resource.
+        #
+        # @param [String, #to_s] text
+        def puts text
+          io.write text.to_s + "\n"
         end
 
         # Return the lines in this file.
@@ -135,12 +157,47 @@ module IMW
         # Emit +data+ into this file.
         #
         # @param [String, Array, #each] data object to emit
-        # @option options [true, false] :persist (false) Don't close the file after writing
         def emit data, options={}
           data.each do |element|  # works if data is an Array or a String
             io.puts(element.to_s)
           end
-          io.close unless options[:persist]
+        end
+
+        # Return a snippet of text from this resource.
+        #
+        # Will read the first 1024 bytes and strip non-ASCII
+        # characters from them.  For more control, redefine this
+        # method in another module.
+        #
+        # @return [String]
+        def snippet
+          returning([]) do |snip|
+            io.read(1024).bytes.each do |byte|
+                                        # CR            LF          SPACE            ~
+              snip << byte.chr if byte == 13 || byte == 10 || byte >= 32 && byte <= 126
+            end
+          end.join
+        end
+
+        # Return the number of lines in this file.
+        #
+        # @return [Integer]
+        def num_lines
+          wc[0]
+        end
+
+        # Return the number of words in this file.
+        #
+        # @return [Integer]
+        def num_words
+          wc[1]
+        end
+
+        # Return the number of characters in this file.
+        #
+        # @return [Integer]
+        def num_chars
+          wc[2]
         end
 
         # Return a summary of properties of this local file.
@@ -154,25 +211,39 @@ module IMW
           data = {
             :basename  => basename,
             :size      => size,
-            :extension => extension
+            :extension => extension,
+            :num_lines => num_lines
           }
-          if respond_to?(:snippet)
-            data[:snippet] = snippet
-          end
-          if respond_to?(:schema)
-            data[:schema] = schema
-          end
+          data[:snippet] = snippet if respond_to?(:snippet)
+          data[:schema]  = schema  if respond_to?(:schema)
           data
         end
+
+        protected
         
+        # Return a triple of line, word, and character counts for this
+        # resource.
+        #
+        # Relies on the Unix utility +wc+.
+        #
+        # @return [Array<Integer>]
+        def wc
+          @wc ||= begin
+                    `wc #{path}`.chomp.strip.split.map(&:to_i)
+                  rescue
+                    [0,0,0] # FIXME
+                  end
+        end
+
       end
 
       # Defines methods for manipulating the contents of a local
       # directory.
       module LocalDirectory
 
-        # Explicitly set the path to the schemata for this directory.
-        attr_writer :schemata_path
+        # Lets local directories contain a special metadata file which
+        # describes their contents.
+        include IMW::Metadata::ContainsMetadata
 
         # Is this resource a directory?
         #
@@ -314,51 +385,25 @@ module IMW
             :contents  => resources.map do |resource|
               resource.guess_schema! if guess_schema? && resource.respond_to?(:guess_schema!)
               resource_summary = resource.summary
-              resource_summary[:schema] = schemata[resource] if schemata && schemata.describe?(resource)
+              resource_summary[:schema] = metadata[resource] if metadata && metadata.describe?(resource) # this should be handled by 'resources' method above
               resource_summary
             end
           }
         end
 
         # Whether or not to have this directory's resources guess
-        # their schema when none is provided.
+        # their schemas when none is provided.
         #
         # @return [true, false]
         def guess_schema?
           (!! @guess_schema)
         end
 
-        # Force this directory's resources to guess at their schemas.
+        # Force this directory's resources to guess at their schema.
         #
         # @return [true]
         def guess_schema!
           @guess_schema = true
-        end
-
-        # The path at which this directory's schemata file lives.
-        #
-        # Will default to any file beginning with +schema+ and ending
-        # with a +yaml+ or +json+ extension directly in this
-        # directory.
-        #
-        # @return [String, nil]
-        def schemata_path
-          @schemata_path ||= contents.detect { |path| path =~ /schema.*\.(ya?ml|json)$/ }
-        end
-
-        # Does this directory contain a file providing schemata for
-        # other files within this directory?
-        #
-        # @return [true, false]
-        def schemata?
-          (!! schemata_path)
-        end
-
-        # Return the schemata for this directory.
-        #
-        # @return [IMW::Metadata::Schemata, nil]
-        def schemata
-          @schemata ||= schemata? && Schemata.load(schemata_path)
         end
 
       end

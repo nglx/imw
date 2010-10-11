@@ -8,15 +8,18 @@ require 'imw/utils'
 # transformations of data as a network of dependencies (a la Make or
 # Rake).
 #
-# IMW has a few central concepts: resources, datasets, workflows, and
-# repositories.
+# IMW has a few central concepts: resources, metadata, datasets,
+# workflows, and repositories.
 #
 # Resources represent individual data resources like local files,
-# websites, databases, &c.  Resources are typically instantiated via
-# IMW.open, with IMW doing the work of figuring out what to return
+# websites, databases, &c.  An IMW::Resource is typically instantiated
+# via IMW.open, with IMW doing the work of figuring out what to return
 # based on the URI passed in.
 #
-# Datasets represent collections of related data resources.  An
+# A Resource can have a schema which describes the fields in its data.
+# IMW::Metadata consists of classes which describe fields.
+#
+# Datasets represent collections of related data resources ..  An
 # IMW::Dataset comes with a pre-defined (but customizable) workflow
 # that takes data resources through several steps: rip, parse, munge,
 # and package.  The workflow leverages Rake and so the various tasks
@@ -52,10 +55,19 @@ module IMW
   # @option options [Array<String,Module>] without same as <tt>:skip_modules</tt> in IMW::Resource.extend_instance!  
   # @return [IMW::Resource] the resulting resource, property extended for the given URI
   def self.open obj, options={}, &block
-    return obj if obj.is_a?(IMW::Resource)
-    options[:use_modules]  ||= (options[:as]      || [])
-    options[:skip_modules] ||= (options[:without] || [])
-    IMW::Resource.new(obj, options)
+    if obj.is_a?(IMW::Resource)
+      resource = obj
+    else
+      options[:use_modules]  ||= (options[:as]      || [])
+      options[:skip_modules] ||= (options[:without] || [])
+      resource = IMW::Resource.new(obj, options)
+    end
+    if block_given?
+      yield resource
+      resource.close
+    else
+      resource
+    end
   end
 
   # Works the same way as IMW.open except opens the resource for
@@ -63,8 +75,8 @@ module IMW
   #
   # @param  [String, Addressable::URI] uri the URI to open
   # @return [IMW::Resource] the resultng resource, properly extended for the given URI and opened for writing.
-  def self.open! uri, options={}
-    IMW::Resource.new(uri, options.merge(:mode => 'w'))
+  def self.open! uri, options={}, &block
+    open(uri, options.merge(:mode => 'w'), &block)
   end
 
   # The default repository in which to place datasets.  See the
@@ -76,32 +88,41 @@ module IMW
     @@repository ||= IMW::Repository.new
   end
 
-  # Create a dataset and put it in the default IMW repository.  Also
-  # yields the dataset so you can define its workflow
+  # Create a dataset and put it in the default IMW repository.
   #
-  # IMW.dataset :my_dataset do
-  # 
-  #   # Define some paths we're going to use
-  #   add_path :raw_data,  :ripd, 'raw_data.csv'
-  #   add_path :fixd_data, :fixd, 'fixed_data.csv'
+  # Evaluates the given block in the context of the new dataset.  This
+  # allows you to define tasks, add paths, and use defined metadata in
+  # an elegant way.
   #
-  #   # Copy a file from a website to this dataset's +ripd+ directory.
-  #   rip do
-  #     IMW.open('http://mysite.com/data_archives/2010/03/03.csv').cp(path_to(:raw_data))
+  #   IMW.dataset :my_dataset do
+  #   
+  #     # Define some paths we're going to use
+  #     add_path :original, :rawd, 'original.csv'
+  #     add_path :filtered, :fixd, 'filtered.csv'
+  #     add_path :package,  :pkgd, 'filtered.tar.bz2'
+  #
+  #     # Copy a CSV filefrom a website to this machine.
+  #     rip do
+  #       open('http://mysite.com/data_archives/2010/03/03.csv').cp(path_to(:original))
+  #     end
+  #
+  #     # Filter the original CSV data by the
+  #     # <tt>meets_some_condition?</tt> method we define elsewhere...
+  #     munge do
+  #       open!(path_to(:filtered)) do |filtered|
+  #         open(path_to(:original)).each do |row|
+  #           filtered << row if meets_some_condition?(row)
+  #       end
+  #     end
+  #
+  #     # Compress the filtered data to an archive.
+  #     package do
+  #       open(path_to(:filtered)).compress.mv(path_to(:package))
+  #     end
   #   end
   #
-  #   # Filter the raw data to those values which match some criterion defined by <tt>accept?</tt>
-  #   munge do
-  #     IMW.open(path_to(:raw_data)).map do |row|
-  #       row if accept?(row)
-  #     end.compact.emit(path_to(:fixd_data))
-  #   end
-  #
-  #   # Compress this new data
-  #   package do
-  #     IMW.open(path_to(:fixd_data)).compress.mv(path_to(:pkgd))
-  #   end
-  # end
+  # See the <tt>/examples</tt> directory of the IMW distribution for
+  # more examples.
   #
   # @param [Symbol, String] handle the handle to identify this dataset with
   # @param [Hash]   options a hash of options (see IMW::Dataset)
@@ -112,4 +133,9 @@ module IMW
     d
   end
 
+end
+
+# Works just like IMW.dataset but defined at a top-level scope.
+def dataset handle, options={}, &block
+  IMW.dataset(handle, options, &block)
 end

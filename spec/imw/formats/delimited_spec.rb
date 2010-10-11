@@ -18,6 +18,15 @@ describe IMW::Formats::Csv do
     IMW.open('test.csv').load[1].last.should == "4"
   end
 
+  it "should raise an error on an invalid schema" do
+    lambda { @sample.schema = [{:name => :foobar, :has_many => {:associations => [:foo, :bar]}}] }.should raise_error(IMW::SchemaError)
+  end
+
+  it "should accept a valid schema" do
+    @sample.schema = [:foo, :bar, :baz]
+    @sample.schema.should == [{:name => 'foo'}, {:name => 'bar'}, {:name => 'baz'}]
+  end
+
   describe "guessing a schema" do
 
     Dir[File.join(IMWTest::DATA_DIR, 'formats/delimited/with_schema/*')].each do |path|

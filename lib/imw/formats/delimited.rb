@@ -11,12 +11,10 @@ module IMW
     # @abstract
     module Delimited
 
-      include Enumerable
-
       # Ensure that this delimited resource is described by a an
       # ordered collection of flat fields.
       def validate_schema!
-        raise IMW::Metadata::SchemaError.new("#{self.class} resources must be described by an ordered set of flat fields") if schema.any?(&:nested?)
+        raise IMW::SchemaError.new("#{self.class} resources must be described by an ordered set of flat fields") if schema.any?(&:nested?)
       end
 
       # Default options to be passed to
@@ -26,7 +24,7 @@ module IMW
       # @return [Hash]
       def delimited_options
         @delimited_options ||= {
-          :headers        => schema && schema.map { |field| field[:name] }
+          :headers        => schema && schema.map { |field| field['name'] }
         }.merge(resource_options_compatible_with_faster_csv)
       end
 
@@ -42,24 +40,29 @@ module IMW
         FasterCSV.parse(read, delimited_options, &block)
       end
 
+      # Gives us goodies!  Needs +each+ below.
+      include Enumerable
+      
       # Call +block+ with each row in this delimited resource.
       def each &block
-        load(&block)
+        require 'fastercsv'
+        FasterCSV.new(io, delimited_options).each(&block)
       end
 
-      # Emit an array of arrays into this resource.
+      # Emit a single array or an array of arrays into this resource.
       #
-      # @param [Array] data array of arrays to emit
+      # @param [Array<Array>, Array] data array or array of arrays to emit
       # @param [Hash] options
       # @option options [true, false] :persist Keep this resource's IO object open after emiting
       def emit data, options={}
         require 'fastercsv'
+        data = [data] unless data.first.is_a?(Array)
         data.each do |row|
           write(FasterCSV.generate_line(row, delimited_options))
         end
-        io.close unless options[:persist]
         self
       end
+      alias_method :<<, :emit
 
       # Do a heuristic check to determine whether or not the first row
       # of this delimited data is a row of headers.
@@ -109,9 +112,9 @@ module IMW
         require 'fastercsv'
         returning([]) do |rows|
           row_num = 1
-          FasterCSV.new(io, delimited_options).each do |row|
+          each do |row|
             break if row_num > 10
-            rows << row
+            rows << row.size.times.map { |index| row[index] }
             row_num += 1
           end
         end

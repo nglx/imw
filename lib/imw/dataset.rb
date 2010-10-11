@@ -96,9 +96,12 @@ module IMW
   #   dataset = IMW::Dataset.new :my_dataset, :repository => repo
   class Dataset
 
-    include IMW::Workflow
+    # The handle this dataset goes by.  Used for identifying it within
+    # a repository.
+    attr_accessor :handle
 
-    attr_accessor :handle, :options
+    # Options for this dataset.
+    attr_accessor :options
 
     def initialize handle, options = {}
       @options = options
@@ -110,6 +113,13 @@ module IMW
         options[:repository][handle] = self
       end
     end
+
+    # Provides this dataset with a workflow of tasks managed by Rake.
+    include IMW::Workflow
+
+    # Provides this dataset with DSL like methods to construct a
+    # schema in an IMW file.
+    include IMW::Metadata::DSL
 
   end
 end

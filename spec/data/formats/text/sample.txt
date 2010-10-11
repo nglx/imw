@@ -1,0 +1,650 @@
+ID: 001
+NAME: Gray-bellied Night Monkey
+GENUS: Aotus
+SPECIES: lemurinus
+
+ID: 002
+NAME: Panamanian Night Monkey
+GENUS: Aotus
+SPECIES: zonalis
+
+ID: 003
+NAME: Hernández-Camacho's Night Monkey
+GENUS: Aotus
+SPECIES: jorgehernandezi
+
+ID: 004
+NAME: Gray-handed Night Monkey
+GENUS: Aotus
+SPECIES: griseimembra
+
+ID: 005
+NAME: Hershkovitz's Night Monkey
+GENUS: Aotus
+SPECIES: hershkovitzi          
+
+ID: 006
+NAME: Brumback's Night Monkey
+GENUS: Aotus
+SPECIES: brumbacki
+
+ID: 007
+NAME: Three-striped Night Monkey
+GENUS: Aotus
+SPECIES: trivirgatus
+
+ID: 008
+NAME: Spix's Night Monkey
+GENUS: Aotus
+SPECIES: vociferans
+
+ID: 009
+NAME: Malaysian Lar Gibbon
+GENUS: Hylobates
+SPECIES: lar lar
+
+ID: 010
+NAME: Carpenter's Lar Gibbon
+GENUS: Hylobates
+SPECIES: lar carpenteri
+
+ID: 011
+NAME: Central Lar Gibbon
+GENUS: Hylobates
+SPECIES: lar entelloides
+
+ID: 012
+NAME: Sumatran Lar Gibbon
+GENUS: Hylobates
+SPECIES: lar vestitus
+
+ID: 013
+NAME: Yunnan Lar Gibbon
+GENUS: Hylobates
+SPECIES: lar yunnanensis
+
+ID: 014
+NAME: Mountain Agile Gibbon
+GENUS: Hylobates
+SPECIES: agilis agilis
+
+ID: 015
+NAME: Bornean White-bearded Gibbon
+GENUS: Hylobates
+SPECIES: agilis albibarbis
+
+ID: 016
+NAME: Lowland Agile Gibbon
+GENUS: Hylobates
+SPECIES: agilis unko
+
+ID: 017
+NAME: Müller's Gray Gibbon
+GENUS: Hylobates
+SPECIES: muelleri muelleri
+
+ID: 018
+NAME: Abbott's Gray Gibbon
+GENUS: Hylobates
+SPECIES: muelleri abbotti
+
+ID: 019
+NAME: Northern Gray Gibbon
+GENUS: Hylobates
+SPECIES: muelleri funereus
+
+ID: 020
+NAME: Black Tamarin
+GENUS: Saguinas
+SPECIES: niger
+
+ID: 021
+NAME: Black-mantled Tamarin
+GENUS: Saguinas
+SPECIES: nigricollis
+
+ID: 022
+NAME: Brown-mantled Tamarin
+GENUS: Saguinas
+SPECIES: fuscicollis
+
+ID: 023
+NAME: Cottontop Tamarin or Pinché Tamarin
+GENUS: Saguinas
+SPECIES: oedipus
+
+ID: 024
+NAME: Emperor Tamarin
+GENUS: Saguinas
+SPECIES: imperator
+
+ID: 025
+NAME: Geoffroy's Tamarin
+GENUS: Saguinas
+SPECIES: geoffroyi
+
+ID: 026
+NAME: Golden-mantled Tamarin
+GENUS: Saguinas
+SPECIES: tripartitus
+
+ID: 027
+NAME: Graells's Tamarin
+GENUS: Saguinas
+SPECIES: graellsi
+
+ID: 028
+NAME: Martins's Tamarin
+GENUS: Saguinas
+SPECIES: martinsi
+
+ID: 029
+NAME: Mottle-faced Tamarin
+GENUS: Saguinas
+SPECIES: inustus
+
+ID: 030
+NAME: Moustached Tamarin
+GENUS: Saguinas
+SPECIES: mystax
+
+ID: 031
+NAME: Pied Tamarin
+GENUS: Saguinas
+SPECIES: bicolor
+
+ID: 032
+NAME: Red-capped Tamarin
+GENUS: Saguinas
+SPECIES: pileatus
+
+ID: 033
+NAME: Red-handed Tamarin
+GENUS: Saguinas
+SPECIES: midas
+
+ID: 034
+NAME: White-footed Tamarin
+GENUS: Saguinas
+SPECIES: leucopus
+
+ID: 035
+NAME: White-lipped Tamarin
+GENUS: Saguinas
+SPECIES: labiatus
+
+ID: 036
+NAME: White-mantled Tamarin
+GENUS: Saguinas
+SPECIES: melanoleucus
+
+ID: 037
+NAME: Allen's Swamp Monkey
+GENUS: Allenopithecus
+SPECIES: nigroviridis
+
+ID: 038
+NAME: Angolan Talapoin
+GENUS: Miopithecus
+SPECIES: talapoin
+
+ID: 039
+NAME: Gabon Talapoin
+GENUS: Miopithecus
+SPECIES: ogouensis
+
+ID: 040
+NAME: Patas Monkey
+GENUS: Erythrocebus
+SPECIES: patas
+
+ID: 041
+NAME: Green Monkey
+GENUS: Chlorocebus
+SPECIES: sabaeus
+
+ID: 042
+NAME: Grivet
+GENUS: Chlorocebus
+SPECIES: aethiops
+
+ID: 043
+NAME: Bale Mountains Vervet
+GENUS: Chlorocebus
+SPECIES: djamdjamensis
+
+ID: 044
+NAME: Tantalus Monkey
+GENUS: Chlorocebus
+SPECIES: tantalus
+
+ID: 045
+NAME: Vervet Monkey
+GENUS: Chlorocebus
+SPECIES: pygerythrus
+
+ID: 046
+NAME: Malbrouck
+GENUS: Chlorocebus
+SPECIES: cynosuros
+
+ID: 047
+NAME: Dryas Monkey or Salongo Monkey
+GENUS: Cercopithecus
+SPECIES: dryas
+
+ID: 048
+NAME: Diana Monkey
+GENUS: Cercopithecus
+SPECIES: diana
+
+ID: 049
+NAME: Roloway Monkey
+GENUS: Cercopithecus
+SPECIES: roloway
+
+ID: 050
+NAME: Greater Spot-nosed Monkey
+GENUS: Cercopithecus
+SPECIES: nictitans
+
+ID: 051
+NAME: Blue Monkey
+GENUS: Cercopithecus
+SPECIES: mitis
+
+ID: 052
+NAME: Silver Monkey
+GENUS: Cercopithecus
+SPECIES: doggetti
+
+ID: 053
+NAME: Golden Monkey
+GENUS: Cercopithecus
+SPECIES: kandti
+
+ID: 054
+NAME: Sykes's Monkey
+GENUS: Cercopithecus
+SPECIES: albogularis
+
+ID: 055
+NAME: Mona Monkey
+GENUS: Cercopithecus
+SPECIES: mona
+
+ID: 056
+NAME: Campbell's Mona Monkey
+GENUS: Cercopithecus
+SPECIES: campbelli
+
+ID: 057
+NAME: Lowe's Mona Monkey
+GENUS: Cercopithecus
+SPECIES: lowei
+
+ID: 058
+NAME: Crested Mona Monkey
+GENUS: Cercopithecus
+SPECIES: pogonias
+
+ID: 059
+NAME: Wolf's Mona Monkey
+GENUS: Cercopithecus
+SPECIES: wolfi
+
+ID: 060
+NAME: Dent's Mona Monkey
+GENUS: Cercopithecus
+SPECIES: denti
+
+ID: 061
+NAME: Lesser Spot-nosed Monkey
+GENUS: Cercopithecus
+SPECIES: petaurista
+
+ID: 062
+NAME: White-throated Guenon
+GENUS: Cercopithecus
+SPECIES: erythrogaster
+
+ID: 063
+NAME: Sclater's Guenon
+GENUS: Cercopithecus
+SPECIES: sclateri
+
+ID: 064
+NAME: Red-eared Guenon
+GENUS: Cercopithecus
+SPECIES: erythrotis
+
+ID: 065
+NAME: Moustached Guenon
+GENUS: Cercopithecus
+SPECIES: cephus
+
+ID: 066
+NAME: Red-tailed Monkey
+GENUS: Cercopithecus
+SPECIES: ascanius
+
+ID: 067
+NAME: L'Hoest's Monkey
+GENUS: Cercopithecus
+SPECIES: lhoesti
+
+ID: 068
+NAME: Preuss's Monkey
+GENUS: Cercopithecus
+SPECIES: preussi
+
+ID: 069
+NAME: Sun-tailed Monkey
+GENUS: Cercopithecus
+SPECIES: solatus
+
+ID: 070
+NAME: Hamlyn's Monkey
+GENUS: Cercopithecus
+SPECIES: hamlyni
+
+ID: 071
+NAME: De Brazza's Monkey
+GENUS: Cercopithecus
+SPECIES: neglectus
+
+ID: 072
+NAME: Barbary Macaque
+GENUS: Macaca
+SPECIES: sylvanus
+
+ID: 073
+NAME: Lion-tailed Macaque
+GENUS: Macaca
+SPECIES: silenus
+
+ID: 074
+NAME: Southern Pig-tailed Macaque or Beruk
+GENUS: Macaca
+SPECIES: nemestrina
+
+ID: 075
+NAME: Northern Pig-tailed Macaque
+GENUS: Macaca
+SPECIES: leonina
+
+ID: 076
+NAME: Pagai Island Macaque or Bokkoi
+GENUS: Macaca
+SPECIES: pagensis
+
+ID: 077
+NAME: Siberut Macaque
+GENUS: Macaca
+SPECIES: siberu
+
+ID: 078
+NAME: Moor Macaque
+GENUS: Macaca
+SPECIES: maura
+
+ID: 079
+NAME: Booted Macaque
+GENUS: Macaca
+SPECIES: ochreata
+
+ID: 080
+NAME: Tonkean Macaque
+GENUS: Macaca
+SPECIES: tonkeana
+
+ID: 081
+NAME: Heck's Macaque
+GENUS: Macaca
+SPECIES: hecki
+
+ID: 082
+NAME: Gorontalo Macaque
+GENUS: Macaca
+SPECIES: nigrescens
+
+ID: 083
+NAME: Celebes Crested Macaque or Black Ape
+GENUS: Macaca
+SPECIES: nigra
+
+ID: 084
+NAME: Crab-eating Macaque or Long-tailed Macaque or Kera
+GENUS: Macaca
+SPECIES: fascicularis
+
+ID: 085
+NAME: Stump-tailed Macaque or Bear Macaque
+GENUS: Macaca
+SPECIES: arctoides
+
+ID: 086
+NAME: Rhesus Macaque
+GENUS: Macaca
+SPECIES: mulatta
+
+ID: 087
+NAME: Formosan Rock Macaque
+GENUS: Macaca
+SPECIES: cyclopis
+
+ID: 088
+NAME: Japanese Macaque
+GENUS: Macaca
+SPECIES: fuscata
+
+ID: 089
+NAME: Toque Macaque
+GENUS: Macaca
+SPECIES: sinica
+
+ID: 090
+NAME: Bonnet Macaque
+GENUS: Macaca
+SPECIES: radiata
+
+ID: 091
+NAME: Assam Macaque
+GENUS: Macaca
+SPECIES: assamensis
+
+ID: 092
+NAME: Tibetan Macaque or Milne-Edwards' Macaque
+GENUS: Macaca
+SPECIES: thibetana
+
+ID: 093
+NAME: Arunachal Macaque or Munzala
+GENUS: Macaca
+SPECIES: munzala
+
+ID: 094
+NAME: Grey-cheeked Mangabey
+GENUS: Lophocebus
+SPECIES: albigena
+
+ID: 095
+NAME: Black Crested Mangabey
+GENUS: Lophocebus
+SPECIES: aterrimus
+
+ID: 096
+NAME: Opdenbosch's Mangabey
+GENUS: Lophocebus
+SPECIES: opdenboschi
+
+ID: 097
+NAME: Uganda Mangabey
+GENUS: Lophocebus
+SPECIES: ugandae
+
+ID: 098
+NAME: Johnston's Mangabey
+GENUS: Lophocebus
+SPECIES: johnstoni
+
+ID: 099
+NAME: Osman Hill's Mangabey
+GENUS: Lophocebus
+SPECIES: osmani
+
+ID: 100
+NAME: Kipunji
+GENUS: Rungwecebus
+SPECIES: kipunji
+
+ID: 101
+NAME: Hamadryas Baboon
+GENUS: Papio
+SPECIES: hamadryas
+
+ID: 102
+NAME: Guinea Baboon
+GENUS: Papio
+SPECIES: papio
+
+ID: 103
+NAME: Olive Baboon
+GENUS: Papio
+SPECIES: anubis
+
+ID: 104
+NAME: Yellow Baboon
+GENUS: Papio
+SPECIES: cynocephalus
+
+ID: 105
+NAME: Chacma Baboon
+GENUS: Papio
+SPECIES: ursinus
+
+ID: 106
+NAME: Gelada
+GENUS: Theropithecus
+SPECIES: gelada
+
+ID: 107
+NAME: Sooty Mangabey
+GENUS: Cercocebus
+SPECIES: atys
+
+ID: 108
+NAME: Collared Mangabey
+GENUS: Cercocebus
+SPECIES: torquatus
+
+ID: 109
+NAME: Agile Mangabey
+GENUS: Cercocebus
+SPECIES: agilis
+
+ID: 110
+NAME: Golden-bellied Mangabey
+GENUS: Cercocebus
+SPECIES: chrysogaster
+
+ID: 111
+NAME: Tana River Mangabey
+GENUS: Cercocebus
+SPECIES: galeritus
+
+ID: 112
+NAME: Sanje Mangabey
+GENUS: Cercocebus
+SPECIES: sanjei
+
+ID: 113
+NAME: Mandrill
+GENUS: Mandrillus
+SPECIES: sphinx
+
+ID: 114
+NAME: Drill
+GENUS: Mandrillus
+SPECIES: leucophaeus
+
+ID: 115
+NAME: Black Colobus
+GENUS: Colobus
+SPECIES: satanas
+
+ID: 116
+NAME: Angola Colobus
+GENUS: Colobus
+SPECIES: angolensis
+
+ID: 117
+NAME: King Colobus
+GENUS: Colobus
+SPECIES: polykomos
+
+ID: 118
+NAME: Ursine Colobus
+GENUS: Colobus
+SPECIES: vellerosus
+
+ID: 119
+NAME: Mantled Guereza
+GENUS: Colobus
+SPECIES: guereza
+
+ID: 120
+NAME: Western Red Colobus
+GENUS: Piliocolobus
+SPECIES: badius
+
+ID: 121
+NAME: Pennant's Colobus
+GENUS: Piliocolobus
+SPECIES: pennantii
+
+ID: 122
+NAME: Preuss's Red Colobus
+GENUS: Piliocolobus
+SPECIES: preussi
+
+ID: 123
+NAME: Thollon's Red Colobus
+GENUS: Piliocolobus
+SPECIES: tholloni
+
+ID: 124
+NAME: Central African Red Colobus
+GENUS: Piliocolobus
+SPECIES: foai
+
+ID: 125
+NAME: Ugandan Red Colobus
+GENUS: Piliocolobus
+SPECIES: tephrosceles
+
+ID: 126
+NAME: Uzungwa Red Colobus
+GENUS: Piliocolobus
+SPECIES: gordonorum
+
+ID: 127
+NAME: Zanzibar Red Colobus
+GENUS: Piliocolobus
+SPECIES: kirkii
+
+ID: 128
+NAME: Tana River Red Colobus
+GENUS: Piliocolobus
+SPECIES: rufomitratus
+
+ID: 129
+NAME: Olive Colobus
+GENUS: Procolobus
+SPECIES: verus
+
+ID: 130
+NAME: Maroon Leaf Monkey
+GENUS: Presbytis
+SPECIES: rubicunda
+

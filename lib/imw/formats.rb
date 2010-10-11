@@ -10,20 +10,22 @@ module IMW
     autoload :Xhtml, 'imw/formats/sgml'
     autoload :Rdf,   'imw/formats/sgml'      
     autoload :Yaml,  'imw/formats/yaml'
+    autoload :Pdf,   'imw/formats/pdf'
 
     # Handlers which augment a resource with data format specific
     # methods.
     HANDLERS = [
                 [ "Formats::Csv",   /\.csv$/i    ],
                 [ "Formats::Tsv",   /\.tsv$/i    ],
-                [ "Formats::Excel", /\.xslx?$/i  ],
+                [ "Formats::Excel", /\.xlsx?$/i  ],
                 [ "Formats::Json",  /\.json$/i   ],
                 [ "Formats::Xml",   /\.xml$/i    ],
                 [ "Formats::Xsl",   /\.xsl$/i    ],                         
                 [ "Formats::Html",  /\.html?$/i  ],
                 [ "Formats::Xhtml", /\.xhtml?$/i ],
                 [ "Formats::Rdf",   /\.rdf?$/i   ],
-                [ "Formats::Yaml",  /\.ya?ml$/i  ]
+                [ "Formats::Yaml",  /\.ya?ml$/i  ],
+                [ "Formats::Pdf",   /\.pdf$/i    ]
                ]
   end
 end
