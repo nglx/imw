@@ -11,7 +11,7 @@ describe IMW::Formats::Json do
   end
 
   it "should be able to write JSON" do
-    IMW.open!('test.json').emit({ 'foobar' => 3, 'bazbooz' => 4 })
+    IMW.open!('test.json') { |f| f.emit({ 'foobar' => 3, 'bazbooz' => 4 }) }
     IMW.open('test.json').load['foobar'].should == 3
   end
   

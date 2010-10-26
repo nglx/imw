@@ -24,11 +24,11 @@ module IMWTest
     # length of the filename returned.
     def self.basename options = {}
       length = (options[:length] or FILENAME_MAX_LENGTH)
-      filename = (1..length).map { |i| FILENAME_CHARS.random }.join
+      filename = (1..length).map { |i| FILENAME_CHARS.rand }.join
 
       # filenames beginning with hyphens suck
       while (filename[0,1] == '-') do
-        filename[0] = FILENAME_CHARS.random
+        filename[0] = FILENAME_CHARS.rand
       end
       filename
     end
@@ -38,7 +38,7 @@ module IMWTest
     def self.text options = {}
       length = (options[:length] or TEXT_MAX_LENGTH)
       char_pool = options[:newlines] ? TEXT_CHARS : STRING_CHARS
-      (1..length).map { |i| char_pool.random }.join
+      (1..length).map { |i| char_pool.rand }.join
     end
 
     # Create a random file by matching the extension of the given
@@ -190,7 +190,7 @@ module IMWTest
       FileUtils.mkdir_p(directory)
 
       (rand(options[:num_files]) + 2).times do
-        ext = options[:extensions].random
+        ext = options[:extensions].rand
         name = self.basename
         if ext == 'dir' then
           if depth <= options[:max_depth] then

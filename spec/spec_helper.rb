@@ -3,9 +3,8 @@ IMW_SPEC_DIR = File.join(IMW_ROOT_DIR, 'spec')                           unless 
 IMW_LIB_DIR  = File.join(IMW_ROOT_DIR, 'lib')                            unless defined? IMW_LIB_DIR
 $: << IMW_LIB_DIR
 
-require 'rubygems'
-require 'spec'
 require 'imw'
+require 'spec'
 
 Dir[File.dirname(__FILE__) + "/support/**/*.rb"].each { |path| require path }
 

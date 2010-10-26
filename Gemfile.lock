@@ -1,0 +1,47 @@
+GEM
+  remote: http://rubygems.org/
+  specs:
+    Ascii85 (1.0.0)
+    activesupport (2.3.5)
+    addressable (2.2.2)
+    aws-s3 (0.6.2)
+      builder
+      mime-types
+      xml-simple
+    builder (2.1.2)
+    dbi (0.4.5)
+      deprecated (= 2.0.1)
+    deprecated (2.0.1)
+    fastercsv (1.5.3)
+    hpricot (0.8.2)
+    json (1.4.6)
+    mime-types (1.16)
+    pdf-reader (0.8.6)
+      Ascii85 (>= 0.9)
+    rake (0.8.7)
+    rest-client (1.6.1)
+      mime-types (>= 1.16)
+    rspec (1.3.0)
+    ruby-ole (1.2.11.1)
+    spreadsheet (0.6.4.1)
+      ruby-ole
+    uuidtools (2.1.1)
+    xml-simple (1.0.12)
+
+PLATFORMS
+  ruby
+
+DEPENDENCIES
+  activesupport (= 2.3.5)
+  addressable
+  aws-s3
+  dbi
+  fastercsv
+  hpricot
+  json
+  pdf-reader
+  rake
+  rest-client (>= 1.6.1)
+  rspec (= 1.3.0)
+  spreadsheet
+  uuidtools

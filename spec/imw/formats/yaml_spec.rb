@@ -12,7 +12,7 @@ describe IMW::Formats::Yaml do
 
   it "should be able to write YAML" do
     data = { 'foobar' => 3, 'bazbooz' => 4 }
-    IMW.open!('test.yaml').emit(data)
+    IMW.open!('test.yaml') { |f| f.emit(data) }
     IMW.open('test.yaml').load['foobar'].should == 3
   end
   
