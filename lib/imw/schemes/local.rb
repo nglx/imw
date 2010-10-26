@@ -130,6 +130,7 @@ module IMW
         def puts text
           io.write text.to_s + "\n"
         end
+        alias_method :<<, :puts
 
         # Return the lines in this file.
         #
@@ -366,6 +367,19 @@ module IMW
           IMW.open(File.join(stripped_uri.to_s, *paths))
         end
 
+        # Recursively walk down this directory
+        def walk(options={}, &block)
+          require 'find'
+          Find.find(path) do |path|
+            if options[:only]
+              next if options[:only] == :files && !File.file?(path)
+              next if options[:only] == :directories && !File.directory?(path)
+              next if options[:only] == :symlinks && !File.symlink?(path)
+            end
+            yield path
+          end
+        end
+        
         # Return a hash summarizing this directory with a key
         # <tt>:contents</tt> containing an array of hashes summarizing
         # this directories contents.
