@@ -4,10 +4,6 @@ require 'imw/utils/extensions/hash'
 require 'imw/utils/extensions/struct'
 require 'imw/utils/extensions/symbol'
 
-require 'active_support/core_ext/object/blank'
-require 'active_support/core_ext/object/misc'
-
-
 module IMW
   # A replacement for the standard system call which raises an
   # IMW::SystemCallError if the command fails which prints better

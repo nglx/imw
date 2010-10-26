@@ -1,5 +1,3 @@
-require 'active_support/core_ext/hash/reverse_merge'
-
 class Hash
   # Return the elements of this hash in a pretty-printed string,
   # inserting +final_string+ between the last two items.
