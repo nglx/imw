@@ -156,6 +156,13 @@ describe IMW::Schemes::Local::LocalDirectory do
     @dir.join("a", "b/c").to_s.should == File.join(@dir.path, 'a/b/c')
   end
 
+  it "can create a subdirectory" do
+    @dir.join("mallaco").exist?.should be_false
+    subdir = @dir.subdir!("mallaco")
+    subdir.exist?.should be_true
+    subdir.directory?.should be_true
+  end
+  
   describe 'can package itself to' do
     ['tar', 'tar.bz2', 'tar.gz', 'zip', 'rar'].each do |extension|
       it "a #{extension} archive" do

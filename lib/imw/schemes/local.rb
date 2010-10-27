@@ -367,6 +367,15 @@ module IMW
           IMW.open(File.join(stripped_uri.to_s, *paths))
         end
 
+        # Open (and create if necessary) a subdirectory beneath this
+        # directory.
+        #
+        # @params [Array<String>] paths
+        # @return [IMW::Resource]
+        def subdir! *paths
+          IMW.dir!(File.join(stripped_uri.to_s, *paths))
+        end
+
         # Recursively walk down this directory
         def walk(options={}, &block)
           require 'find'

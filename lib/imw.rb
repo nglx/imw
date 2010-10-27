@@ -72,6 +72,29 @@ module IMW
     end
   end
 
+  # Open (and create if necessary) a directory at the given URI.
+  #
+  # Will automatically create directories recursively.  Options will
+  # be passed to IMW.open and interpreted appropriately.  If a block
+  # is passed, the directory will be created before the block is
+  # yielded to.
+  #
+  # @param [String, IMW::Resource] uri
+  # @param [Hash] options
+  # @return [IMW::Resource]
+  def self.dir! uri, options={}, &block
+    if block_given?
+      new_dir = open(uri, options.merge(:as => (options[:as] || []) + [Schemes::Local::LocalDirectory])) do |d|
+        new_dir.create
+        yield
+      end
+    else
+      new_dir = open(uri, options.merge(:as => (options[:as] || []) + [Schemes::Local::LocalDirectory]))
+      new_dir.create
+    end
+    new_dir
+  end
+  
   # Works the same way as IMW.open except opens the resource for
   # writing.
   #
