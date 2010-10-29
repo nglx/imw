@@ -1,0 +1,10 @@
+---
+
+metadata:
+  /path/to/my/data.tsv:
+    - name: foobar
+      datatype: foobar
+      doc: foobar
+
+
+

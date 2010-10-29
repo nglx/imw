@@ -1,5 +1,6 @@
 module IMW
   module Tools
+    autoload :Aggregator,        'imw/tools/aggregator'
     autoload :Archiver,          'imw/tools/archiver'
     autoload :Transferer,        'imw/tools/transferer'
     autoload :Summarizer,        'imw/tools/summarizer'

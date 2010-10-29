@@ -22,7 +22,13 @@ module IMW
   # Error communicating with a remote entity.
   NetworkError = Class.new(Error)
 
-  # Error communicating with a remote entity.
+  # Raised when a resource is of the wrong scheme.
+  SchemeError = Class.new(Error)
+
+  # Raised when a resource is of the wrong (or malformed) format.
+  FormatError = Class.new(Error)
+
+  # Bad argument.
   ArgumentError = Class.new(Error)
 
   # Error in defining or matching a schema.
