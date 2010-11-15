@@ -29,13 +29,14 @@ module IMW
       # @param [String, IMW::Resource] new_uri
       # @return [IMW::Resource] the new resource
       def cp new_uri
-        IMW::Tools::Transferer.new(:cp, self, new_uri).transfer!
+        #IMW::Tools::Transferer.new(:cp, self, new_uri).transfer!
+        IMW::Schemes::S3.get(self, new_uri)
       end
 
       # The AWS::S3::S3Object corresponding to this resource.
       def s3_object
-        self.class.make_connection!
-        @s3_object ||= AWS::S3::S3Object.new(path, bucket)
+        ::IMW::Schemes::S3.make_connection!
+        @s3_object ||= AWS::S3::S3Object.new(path, :bucket => bucket)
       end
 
       # Does this resource exist on S3?
@@ -80,7 +81,7 @@ module IMW
       def self.put source, destination
         source       = IMW.open(source)
         destintation = IMW.open(destination)
-        raise IMW::ArgumentError.new("destination must be on S3 -- #{destination.uri} given") unless destination.on_s3?
+        raise IMW::ArgumentError.new("destination must be on S3 -- #{destination} given") unless destination.on_s3?
         make_connection!
         AWS::S3::S3Object.store(destination.path, source.io, destination.bucket)
         destination
@@ -93,9 +94,10 @@ module IMW
       # @return [IMW::Resource] the new resource
       def self.get source, destination
         source      = IMW.open(source)
-        destination = IMW.open(destination)
+        destination = IMW.open!(destination)
+        raise IMW::ArgumentError.new("source must be on S3 -- #{source} given") unless source.on_s3?
         make_connection!
-        AWS::S3::Object.stream(source.path, source.bucket) do |chunk|
+        AWS::S3::S3Object.stream(source.path, source.bucket) do |chunk|
           destination.write(chunk)
         end
         destination.close
