@@ -127,10 +127,9 @@ module IMW
         # Write the text with a trailing newline to this resource.
         #
         # @param [String, #to_s] text
-        def puts text
+        def << text
           io.write text.to_s + "\n"
         end
-        alias_method :<<, :puts
 
         # Return the lines in this file.
         #
@@ -160,7 +159,7 @@ module IMW
         # @param [String, Array, #each] data object to emit
         def emit data, options={}
           data.each do |element|  # works if data is an Array or a String
-            io.puts(element.to_s)
+            io << (element.to_s)
           end
         end
 
