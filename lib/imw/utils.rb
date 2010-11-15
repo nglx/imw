@@ -1,6 +1,7 @@
 require 'rubygems'
 require 'fileutils'
-require 'active_support'
+require 'active_support/core_ext/object/blank'
+require 'active_support/core_ext/object/misc'
 require 'imw/utils/error'
 require 'imw/utils/log'
 require 'imw/utils/paths'
