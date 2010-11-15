@@ -38,8 +38,9 @@ module IMW
       # @return [Hash]
       def normalized_extension_counts
         @normalized_extension_counts ||= returning({}) do |weighted|
+          num_files = resources.reject(&:is_directory?).length.to_f
           extension_counts.each_pair do |extension, count|
-            weighted[extension] = count.to_f / num_files.to_f
+            weighted[extension] = count.to_f / num_files
           end
         end
       end
