@@ -11,12 +11,12 @@ module IMW
     #
     # Any remote resources will be downloaded into the directory.
     # 
-    # If any of the resources are (local and) archives, they will first be
+    # If any of the resources are archives, they will first be
     # extracted, with only their contents winding up in the final
     # directory (the file hierarchy of the archive will be preserved).
     #
-    # If any of the resources are (local and) compressed, they will
-    # first be uncompressed before being added to the directory.
+    # If any of the resources are compressed, they will first be
+    # uncompressed before being added to the directory.
     #
     # As an example:
     # 
@@ -90,7 +90,7 @@ module IMW
       # @return [IMW::Tools::Aggregator]
       def aggregate *paths_or_inputs
         @errors = []
-        paths_or_inputs.each do |path_or_input|
+        paths_or_inputs.flatten.compact.each do |path_or_input|
           input = IMW.open(path_or_input)
           if input.is_local?
             aggregate_local_input(input)
