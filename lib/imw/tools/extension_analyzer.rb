@@ -4,8 +4,10 @@ module IMW
     # Mixin with some heuristic methods for identifying common
     # extensions and likely data formats for a collection of files.
     #
-    # Requires the including class to define a method +resources+ which
-    # returns an array of IMW::Resource objects.
+    # Requires the including class to define a method +resources+
+    # which returns an array of IMW::Resource objects as well as a
+    # method +total_size+ which gives the total size of the resources
+    # (for weighting extensions by size).
     module ExtensionAnalyzer
 
       # Return the file counts of each extension.
@@ -24,7 +26,7 @@ module IMW
       # Return the most common extension by count of files.
       def most_common_extension_by_count
         return @most_common_extension_by_count if @most_common_extension_by_count
-        current_count, current_extension = 0, nil
+        current_count, current_extension = 0, ''
         extension_counts.each_pair do |extension, count|
           current_extension = extension if count > current_count
         end
@@ -63,11 +65,14 @@ module IMW
       # @return [String]
       def most_common_extension_by_size
         return @most_common_extension_by_size if @most_common_extension_by_size
-        current_size, current_extension = 0, nil
+        current_size, current_extension = 0, ''
         extension_sizes.each_pair do |extension, size|
-          current_extension = extension if size > current_size
+          if size > current_size
+            current_extension = extension
+            current_size      = size
+          end
         end
-        if current_extension.strip.blank? then current_extension = 'flat' end
+        current_extension = 'flat' if current_extension.strip.blank?
         @most_common_extension_by_size = current_extension
       end
 
@@ -90,8 +95,8 @@ module IMW
         return most_common_extension_by_size if most_common_extension_by_size == most_common_extension_by_count # no contest
         count_fraction = normalized_extension_counts[most_common_extension_by_count]
         size_fraction  = normalized_extension_sizes[most_common_extension_by_size]
-        return most_common_extension_by_count if count_fraction > 0.5 and size_fraction < 0.5 # FIXME arbitrary
-        return most_common_extension_by_size  if count_fraction < 0.5 and size_fraction > 0.5
+        return most_common_extension_by_count if count_fraction >= 0.5 and size_fraction < 0.5 # FIXME arbitrary
+        return most_common_extension_by_size  if count_fraction < 0.5 and size_fraction >= 0.5
         most_common_extension_by_size # default to size
       end
 
