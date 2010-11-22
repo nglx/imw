@@ -79,6 +79,13 @@ module IMW
         @user ||= uri.user
       end
 
+      # Returns the password associated with access to this URI.
+      #
+      # @return [String]
+      def password
+        @password ||= uri.password
+      end
+      
       # Return the fragment part of this resource's URI.
       #
       # Will likely be +nil+ for local resources.
