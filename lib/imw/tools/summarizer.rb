@@ -50,7 +50,7 @@ module IMW
       def summary
         @summary ||= inputs.map do |input|
           #input.guess_schema! if input.schema.nil? && input.respond_to?(:guess_schema!)
-          input.respond_to?(:summary) ? input.summary : {}
+          (input.respond_to?(:summary) ? input.summary : {}) rescue {}
         end
       end
 

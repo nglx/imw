@@ -93,10 +93,10 @@ module IMW
       # @return [String]
       def most_common_extension
         return most_common_extension_by_size if most_common_extension_by_size == most_common_extension_by_count # no contest
-        count_fraction = normalized_extension_counts[most_common_extension_by_count]
-        size_fraction  = normalized_extension_sizes[most_common_extension_by_size]
+        count_fraction = (normalized_extension_counts[most_common_extension_by_count] or 0.0)
+        size_fraction  = (normalized_extension_sizes[most_common_extension_by_size]   or 0.0)
         return most_common_extension_by_count if count_fraction >= 0.5 and size_fraction < 0.5 # FIXME arbitrary
-        return most_common_extension_by_size  if count_fraction < 0.5 and size_fraction >= 0.5
+        return most_common_extension_by_size  if count_fraction < 0.5  and size_fraction >= 0.5
         most_common_extension_by_size # default to size
       end
 
