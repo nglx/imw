@@ -1,5 +1,4 @@
 require 'rubygems'
-require 'bundler'
 require 'bundler/setup'
 require 'imw/boot'
 require 'imw/utils'
