@@ -78,7 +78,7 @@ module IMW
       # @raise [RestClient::NotModified, RestClient::Unauthorized, RestClient::ResourceNotFound, RestClient::RequestFailed] error from RestClient on non-2xx response codes
       def post payload, headers={}, &block
         make_restclient_request do
-          RestClient.post(uri.to_s, payload, &block)
+          RestClient.post(uri.to_s, payload, headers, &block)
         end
       end
 
