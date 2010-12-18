@@ -172,7 +172,7 @@ module IMW
         # @return [String]
         def snippet
           returning([]) do |snip|
-            io.read(1024).bytes.each do |byte|
+            (io.read(1024) || '').bytes.each do |byte|
                                         # CR            LF          SPACE            ~
               snip << byte.chr if byte == 13 || byte == 10 || byte >= 32 && byte <= 126
             end
