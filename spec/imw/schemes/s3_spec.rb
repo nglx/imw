@@ -19,5 +19,14 @@ describe IMW::Schemes::S3 do
       @resource.join('a', 'b/c').to_s.should == File.join(@resource.to_s, 'a/b/c')
     end
   end
-  
+
+  describe "reading S3 files" do
+    before { IMW::Schemes::S3.make_connection! }
+    ['file', 'file with spaces', 'file with # fragment'].each do |f|
+      it "can read a file named '#{f}' from S3" do
+        IMW::Resource.new("s3://imw.infinitemonkeys.info/spec/schemes/s3/#{f}").read.chomp.should == 'ok'
+      end
+    end
+  end
+
 end

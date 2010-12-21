@@ -50,6 +50,12 @@ describe IMW::Utils::HasURI do
     new_obj('/path/to/something').stripped_uri.to_s.should == '/path/to/something'
     new_obj('http://user:pass@example.com:8080/path/to/some/script.php?param=value#frag').stripped_uri.to_s.should == 'http://user:pass@example.com:8080/path/to/some/script.php'
   end
-  
+
+  it "should be able to return raw paths" do
+    new_obj('s3://bucket/crazy url with # some dumb naming convention').raw_path.should == '/crazy url with # some dumb naming convention'
+    new_obj('s3://bucket/crazy url with ?some dumb naming convention').raw_path.should  == '/crazy url with ?some dumb naming convention'
+    new_obj('s3://bucket/crazy url with ?some dumb naming #convention').raw_path.should == '/crazy url with ?some dumb naming #convention'
+    new_obj('s3://bucket/crazy url with #some dumb naming ?convention').raw_path.should == '/crazy url with #some dumb naming ?convention'
+  end
 
 end

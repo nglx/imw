@@ -108,6 +108,16 @@ module IMW
         uri.class.new(uri_args)
       end
 
+      # Return the path complete with query string and fragment.
+      #
+      # @return [String]
+      def raw_path
+        p = uri.path
+        p += "?#{uri.query}"    unless uri.query.nil?
+        p += "##{uri.fragment}" unless uri.fragment.nil?
+        p
+      end
+
       def to_s
         uri.to_s
       end
