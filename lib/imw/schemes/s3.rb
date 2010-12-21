@@ -33,17 +33,11 @@ module IMW
         IMW::Schemes::S3.get(self, new_uri)
       end
 
-      # The AWS::S3::S3Object corresponding to this resource.
-      def s3_object
-        ::IMW::Schemes::S3.make_connection!
-        @s3_object ||= AWS::S3::S3Object.new(path, :bucket => bucket)
-      end
-
       # Does this resource exist on S3?
       #
       # @return [true, false]
       def exist?
-        s3_object.exists?
+        AWS::S3::S3Object.exists?(raw_path, bucket)
       end
       alias_method :exists?, :exist?
 
@@ -51,7 +45,7 @@ module IMW
       #
       # @return [IMW::Resource] the deleted object
       def rm
-        s3_object.delete
+        AWS::S3::S3Object.delete(raw_path, bucket)
       end
       alias_method :rm!, :rm
 
@@ -70,7 +64,7 @@ module IMW
       #
       # @return [String]
       def read
-        s3_object.value
+        AWS::S3::S3Object.value(raw_path, bucket)
       end
 
       # Store +source+ into +destination+.
@@ -83,7 +77,7 @@ module IMW
         destintation = IMW.open(destination)
         raise IMW::ArgumentError.new("destination must be on S3 -- #{destination} given") unless destination.on_s3?
         make_connection!
-        AWS::S3::S3Object.store(destination.path, source.io, destination.bucket)
+        AWS::S3::S3Object.store(destination.raw_path, source.io, destination.bucket)
         destination
       end
 
@@ -97,7 +91,7 @@ module IMW
         destination = IMW.open!(destination)
         raise IMW::ArgumentError.new("source must be on S3 -- #{source} given") unless source.on_s3?
         make_connection!
-        AWS::S3::S3Object.stream(source.path, source.bucket) do |chunk|
+        AWS::S3::S3Object.stream(source.raw_path, source.bucket) do |chunk|
           destination.write(chunk)
         end
         destination.close
@@ -114,7 +108,7 @@ module IMW
         destination = IMW.open(destination)
         raise IMW::PathError.new("Bucket names must be non-blank and match to 'copy'") unless source.bucket.present? && destination.bucket.present? && source.bucket == destination.bucket
         make_connection!
-        AWS::S3::Object.copy(source.path, destination.path, destination.bucket)
+        AWS::S3::Object.copy(source.raw_path, destination.raw_path, destination.bucket)
         destination
       end
 
