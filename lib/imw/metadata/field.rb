@@ -16,22 +16,6 @@ module IMW
     #
     #   IMW::Metadata::Field.new 'name' => 'id', 'type' => :integer, 'title' => "ID", 'description' => "Auto-incremented."
     #   #=> { 'name' => 'id', 'type' => :integer, 'title' > "ID", 'description' => "Auto-incremented." }
-    #
-    # Some properties make a field special:
-    #
-    # <tt>has_many</tt>::
-    #   Denotes that this record is in a "has_many" relationship with
-    #   one or more other records.  The corresponding value should be
-    #   an array
-    #   
-    # <tt>has_one</tt>::
-    #   Denotes that this record is in a "has_one" relationship with
-    #   one or more other records.  The corresponding value should be
-    #   an Array in which each key names the joined record and each
-    #   value is an Array of fields describing the joined record..
-    #
-    # @see IMW::Metadata::Record for more usage of the
-    # <tt>:has_many</tt> and <tt>:has_one</tt> properties.
     class Field < Hash
 
       def initialize obj
@@ -43,23 +27,11 @@ module IMW
           self['name'] = obj.to_s.strip
         end
       end
-      
-      def hierarchical?
-        has_key?('has_many') || has_key?('has_one')
-      end
-      alias_method :nested?, :hierarchical?
-
-      def flat?
-        ! hierarchical?
-      end
 
       def titleize
         self['title'] || self['name'].capitalize # FIXME we can do better than this!
       end
 
-      def associations
-      end
-      
     end
   end
 end

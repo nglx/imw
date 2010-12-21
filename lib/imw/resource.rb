@@ -73,15 +73,12 @@ module IMW
     #
     # @param [String, Addressable::URI] uri
     # @param [Hash] options
-    # @option options [true, false] no_modules
     # @option options [String] mode the mode to open the resource in (will be ignored when inapplicable)
-    # @option options [IMW::Metadata::Record, Array] schema the schema of this resource
     # @return [IMW::Resource]
     def initialize uri, options={}
       self.uri              = uri
       self.resource_options = options
       self.mode             = options[:mode] || 'r'
-      self.schema           = options[:schema]   if options[:schema]
       extend_appropriately!(options)
     end
 

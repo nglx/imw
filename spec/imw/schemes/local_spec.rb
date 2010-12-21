@@ -130,28 +130,6 @@ describe IMW::Schemes::Local::LocalDirectory do
 
   end
 
-  describe "handling schemata" do
-
-    it "should recognize a YAML schema file" do
-      schemata_path = File.join(@dir.path, 'schema.yaml')
-      IMWTest::Random.file(schemata_path)
-      @dir.schemata_path.should == schemata_path
-    end
-
-    it "should recognize a JSON schema file" do
-      schemata_path = File.join(@dir.path, 'schema.json')
-      IMWTest::Random.file(schemata_path)
-      @dir.schemata_path.should == schemata_path
-    end
-
-    it "should recognize a funny-named YAML schema file" do
-      schemata_path = File.join(@dir.path, 'schema-1838293.yml')
-      IMWTest::Random.file(schemata_path)
-      @dir.schemata_path.should == schemata_path
-    end
-    
-  end
-
   it "can join with a path" do
     @dir.join("a", "b/c").to_s.should == File.join(@dir.path, 'a/b/c')
   end

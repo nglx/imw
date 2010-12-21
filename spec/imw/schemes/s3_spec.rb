@@ -19,5 +19,6 @@ describe IMW::Schemes::S3 do
       @resource.join('a', 'b/c').to_s.should == File.join(@resource.to_s, 'a/b/c')
     end
   end
+
   
 end

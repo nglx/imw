@@ -207,11 +207,31 @@ module IMW
     #
     # though there is an accompanying loss of metadata about each
     # field.
-    class Schema < Array
+    class Schema < Hash
+
+      def self.meta_schema
+        {
+          :type      => "record",
+          :name      => "resource",
+          :namespace => "schema.imw",
+          :doc       => "A meta-schema for IMW resources",
+          :fields    => [
+                         {
+                           :name => "uri",
+                           :doc  => "The URI of the resource",
+                           :type => "string"
+                         },
+                         {
+                           :name => "contents",
+                           :doc  => "The resources contained inside this URI (optional)",
+                           :type => [nil, "array"]
+                         }
+                        ]
+        }
+      end
 
       def initialize input=nil
         super()
-        concat(input.map { |field| IMW::Metadata::Field.new(field) }) if input
       end
 
       def self.load resource
