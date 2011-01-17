@@ -71,6 +71,8 @@ module IMW
       # Defines methods for appropriate for a local file.
       module LocalFile
 
+        include IMW::Metadata::HasMetadata
+        
         # Is this resource a regular file?
         #
         # @return [true, false]
@@ -213,6 +215,9 @@ module IMW
                           :num_lines => num_lines
                         })
         end
+
+
+        
 
         protected
         

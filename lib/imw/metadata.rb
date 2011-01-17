@@ -52,7 +52,7 @@ module IMW
     end
 
     def describe? resource
-      has_key?(absolute_uri(resource))
+      self[(absolute_uri(resource))]
     end
     alias_method :describes?, :describe?
 

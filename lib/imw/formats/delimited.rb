@@ -96,7 +96,7 @@ module IMW
         return unless fields_in_first_line?
         copy                        = FasterCSV.new(io, resource_options_compatible_with_faster_csv.merge(:headers => false))
         names                       = (copy.shift || []) rescue []
-        self.fields                 = names.map { |n| { :name => n } }
+        self.fields                 = names.map { |n| { 'name' => n } }
         delimited_options[:headers] = names
       end
 

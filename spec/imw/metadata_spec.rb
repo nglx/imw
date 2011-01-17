@@ -26,6 +26,39 @@ describe IMW::Metadata do
     
   end
 
+  describe "setting URLs" do
+    describe "without a base URL" do
+      it "should set 'foobar' to 'foobar'" do
+        @metadata['foobar'] = {'description' => 'bhaarg', 'fields' => ['a','b','c']}
+        @metadata.keys.should include('foobar')
+      end
+
+      it "should set '/a/b/c/foobar' to '/a/b/c/foobar'" do
+        @metadata['/a/b/c/foobar'] = {'description' => 'bhaarg', 'fields' => ['a','b','c']}
+        @metadata.keys.should include('/a/b/c/foobar')
+      end
+      
+    end
+
+    describe "with a base URL" do
+      before do
+        FileUtils.mkdir_p('chimpo')
+        @metadata.base = File.join(IMWTest::TMP_DIR, 'chimpo')
+      end
+      
+      it "should set 'foobar' to '$base/foobar'" do
+        @metadata['foobar'] = {'description' => 'bhaarg', 'fields' => ['a','b','c']}
+        @metadata.keys.should include(File.join(IMWTest::TMP_DIR, 'chimpo', 'foobar'))
+      end
+
+      it "should set '/a/b/c/foobar' to '/a/b/c/foobar'" do
+        @metadata['/a/b/c/foobar'] = {'description' => 'bhaarg', 'fields' => ['a','b','c']}
+        @metadata.keys.should include('/a/b/c/foobar')
+      end
+      
+    end
+  end
+
   describe "matching URLs with a base" do
 
     it "should raise an error when trying to use a base URI that doesn't exist" do
@@ -40,9 +73,9 @@ describe IMW::Metadata do
     it "should be able to look up a URI relative to its base" do
       FileUtils.mkdir_p('chimpo')
       @metadata.base = File.join(IMWTest::TMP_DIR, 'chimpo')
-      @uri = File.join(IMWTest::TMP_DIR, 'chimpo', 'foobar')
-      @metadata.describe?(@uri).should be_true
-      @metadata.describe?(IMW.open(@uri)).should be_true
+      @metadata['foobar'] = {'description' => 'buzz', 'fields' => ['a','b', 'c']}
+      @metadata.describe?('foobar').should be_true
+      @metadata.describe?(IMW.open('foobar')).should be_true
     end
 
     it "should continue to be able to look up an absolute URI literally" do
@@ -50,5 +83,4 @@ describe IMW::Metadata do
     end
     
   end
-  
 end
