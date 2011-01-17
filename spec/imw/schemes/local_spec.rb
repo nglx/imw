@@ -65,6 +65,11 @@ describe IMW::Schemes::Local::LocalFile do
     # FIXME only look at the first 100 bytes b/c of subsequent non-ascii chars...
     IMW.open(path).snippet[0..100].should == File.new(path).read(101)
   end
+
+  it "can produce a summary with size and line count" do
+    @file.summary[:num_lines].should > 0
+    @file.summary[:size].should > 0
+  end
 end
 
 describe IMW::Schemes::Local::LocalDirectory do
@@ -148,6 +153,13 @@ describe IMW::Schemes::Local::LocalDirectory do
       end
     end
   end
+
+  it "can produce a summary with size and number of files" do
+    @dir.create
+    @dir.summary[:num_files].should == @dir.contents.size
+    @dir.summary[:size].should > 0
+  end
+  
 end
 
 

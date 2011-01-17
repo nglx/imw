@@ -1,65 +1,39 @@
 module IMW
   class Metadata
-    module Schematized
 
-      # Return a fully summary of this Resource.
-      #
-      # The summary will include "external" information about how this
-      # resource appears to the world (via its URI), "internal"
-      # metadata about this resource (its description, &c.), as well
-      # as the structure of this resource's data (it's schema's fields
-      # and a snippet).
-      #
-      # Will return a Hash, with a <tt>:schema</tt> key which maps to
-      # a well-formed AVRO schema for this resource.
-      #
-      # @return [Hash]
-      def summary
-        return @summary if @summary
-        @summary            = external_summary
-        p external_summary
-        @summary[:schema]   = schema
-        @summary[:contents] = resources.map(&:summary) if respond_to?(:resources)
-        @summary
-      end
 
-      # Return informaiton (usually scheme-dependent) on how this
-      # resource is situated in the world, i.e. - its URI, its size,
-      # how many lines it has, &c.
-      #
-      # Modules which override this should chain with +super+:
-      #
-      #   # in my_scheme.rb
-      #   def external_summary
-      #     super().merge(:user => 'bob', :password => 'smith')
-      #   end
-      #
-      # @return [Hash]
-      def external_summary
-        {
-          :uri       => uri.to_s,
-          :basename  => basename,
-          :extension => extension
-        }
-      end
+    # A module which defines how a resource finds Metadata that it can
+    # look up metadata about itself.
+    #
+    # "metadata" in this context is defined as accessors for
+    # +metadata+ (IMW::Metadata), +schema+ (IMW::Metadata::Schema),
+    # +fields+ (IMW::Metadata::Field), and +description+ (String).
+    #
+    # An including class should define a method +dir+ which should
+    # return an object that might contain Metadata, i.e. - that
+    # includes the IMW::Metadata::ContainsMetadata module.
+    #
+    # An including class can optionally define the methods +snippet+
+    # which returns a snippet of the resource as well as
+    # +record_count+ to return a count of how many records the
+    # resource contains.
+    module HasMetadata
 
       # The schema for this object.
       #
       # @return [Hash]
       def schema
         return @schema if @schema
-        @schema = {
-          :type      => "record",
-          :namespace => "schema.imw.resource",
-          :name      => (basename || ''),
-          :doc       => description,
-          :fields    => fields,
-          :non_avro  => {}
-        }
+        @schema             = IMW::Metadata::Schema.new
+        @schema[:type]      = "record"
+        @schema[:namespace] = "schema.imw.resource"
+        @schema[:name]      = (basename || '')
+        @schema[:doc]       = description
+        @schema[:fields]    = fields
         
+        @schema[:non_avro ] = {}
         @schema[:non_avro][:snippet]      = snippet      if respond_to?(:snippet)
         @schema[:non_avro][:record_count] = record_count if respond_to?(:record_count)
-        
         @schema
       end
 
@@ -75,7 +49,6 @@ module IMW
         return @metadata if @metadata
         d = dir
         while d.path != '/'
-          puts "I am examining #{d.path} for metadata information"
           break if d.metadata && d.metadata.describes?(self)
           d = d.dir
         end
@@ -117,3 +90,4 @@ module IMW
     end
   end
 end
+

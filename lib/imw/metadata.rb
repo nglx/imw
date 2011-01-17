@@ -5,8 +5,10 @@ module IMW
   class Metadata < Hash
     
     autoload :Field,            'imw/metadata/field'
-    autoload :Schematized,      'imw/metadata/schematized'
+    autoload :Schema,           'imw/metadata/schema'
     autoload :ContainsMetadata, 'imw/metadata/contains_metadata'
+    autoload :HasSummary,       'imw/metadata/has_summary'
+    autoload :HasMetadata,      'imw/metadata/has_metadata'
 
     # The resource this metadata is anchored to.
     #
@@ -50,7 +52,6 @@ module IMW
     end
 
     def describe? resource
-      puts "I am begin asked whether or not I (with base: #{base}) describe #{resource}"
       has_key?(absolute_uri(resource))
     end
     alias_method :describes?, :describe?
@@ -69,16 +70,11 @@ module IMW
 
     def absolute_uri resource
       obj = IMW.open(resource)
-      puts "I am being asked to relativize the URI for #{obj.uri.to_s}"      
       if base && obj.uri.to_s !~ %r{(^/|://)} # relative path
-        puts "It was a relative path"
         s = base.join(obj.uri.to_s).uri.to_s
-        puts "I am about to return #{s}"
         s
       else
-        puts "It was an absolute path"
         s = obj.uri.to_s
-        puts "I am about to return #{s}"
         s
       end
     end

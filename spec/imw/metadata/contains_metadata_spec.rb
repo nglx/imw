@@ -5,15 +5,15 @@ describe IMW::Metadata::ContainsMetadata do
   before do
     class Foo
       attr_accessor :contents
+      def path     ;  IMWTest::TMP_DIR ; end
       def basename ;  File.basename(IMWTest::TMP_DIR) ; end
-      def join *args ;  File.join(IMWTest::TMP_DIR, *args) ; end
       include IMW::Metadata::ContainsMetadata
     end
     @foo = Foo.new
     @foo.contents = []
   end
 
-  describe 'finding the default metdata URI' do
+  describe 'finding the default metadata URI' do
     it "should return the default metadata URI when 'contents' is empty" do
       @foo.default_metadata_uri.should == File.join(IMWTest::TMP_DIR, File.basename(IMWTest::TMP_DIR) + ".icss.yaml")
     end
@@ -47,7 +47,6 @@ foo:
 YAML
       end
       @foo.metadata.class.should == IMW::Metadata
-      p @foo.metadata
       @foo.metadata['foo']['description'].should == 'bar'
     end
   end

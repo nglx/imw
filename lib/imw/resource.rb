@@ -85,8 +85,9 @@ module IMW
     # Provides resources with a wrapped Addressable::URI object.
     include IMW::Utils::HasURI
 
-    # Provides resources with a schema.
-    include IMW::Metadata::Schematized
+    # Provides resources with a summary, metadata, & schema.
+    include IMW::Metadata::HasSummary
+    include IMW::Metadata::HasMetadata
     
     # Gives IMW::Resource instances with the ability to dynamically
     # extend themselves with modules chosen from a set of handlers

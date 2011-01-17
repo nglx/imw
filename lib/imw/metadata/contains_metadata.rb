@@ -1,8 +1,19 @@
  module IMW
   class Metadata
 
-    # A module that can be mixed into any class defining a +contents+
-    # methods which returns an Array of URI strings.
+    # A module for finding metadata describing the sub-resources of a
+    # given resource.
+    #
+    # An including class describing the parent resource must define
+    # the +contents+ method which must return an Array of Strings
+    # contained within the parent .  These objects will be matched
+    # against possible metadata URIs and the corresponding
+    # IMW::Metadata class created on the fly.
+    #
+    # In case no such object is found, the class should also define
+    # the +basename+ and +path+ methods which will be used to generate
+    # a default URI where metadata about the parent's resources should
+    # live.
     module ContainsMetadata
       
       # The URI containing the metadata for this resource and its
@@ -16,7 +27,7 @@
       #
       # @return [String, nil]
       def default_metadata_uri
-        contents.detect { |path| path =~ /(icss|metadata).*\.(ya?ml|json)$/i } || join("#{basename}.icss.yaml")
+        contents.detect { |path| path =~ /(icss|metadata).*\.(ya?ml|json)$/i } || File.join(path, "#{basename}.icss.yaml")
       end
 
       # Return the metadata for this resource if it exists.
@@ -26,7 +37,6 @@
       # @return [IMW::Metadata, nil]
       def metadata
         return @metadata if @metadata
-        puts "I am about to examine #{self} for metadata.  The contents are #{contents.inspect}.  The default URI is #{default_metadata_uri}"
         obj = IMW.open(default_metadata_uri)
         self.metadata=(obj) if obj.exist?
         @metadata
