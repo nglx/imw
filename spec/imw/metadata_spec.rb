@@ -2,38 +2,85 @@ require File.dirname(__FILE__) + "/../spec_helper"
 
 describe IMW::Metadata do
 
-  describe "initalizing" do
-
-    it "should accept a hash" do
-      IMW::Metadata.new('a' => ['a', 'b']).should == { 'a' => [{:name => 'a'}, {:name => 'b'}] }
-    end
+  before do
+    @metadata = IMW::Metadata.new({'foobar' => {'description' => 'buzz', 'fields' => ['a','b', 'c']}, 'http://www.google.com' => { 'description' => 'google', 'fields' => ['d', 'e', 'f'] }})
   end
 
-  describe 'loading' do
+  describe "matching URLs without a base" do
 
-    it "should accept a Hash in a resource" do
-      data = {'a' => ['a', 'b']}
-      resource = IMW.open('some_resource')
-      IMW.should_receive(:open).with(resource).and_return(resource)
-      resource.should_receive(:load).and_return(data)
-      IMW::Metadata.load(resource).should == { 'a' => [{:name => 'a'}, {:name => 'b'}] }
+    it "should be able to look up a relative URI literally" do
+      @metadata.describes?('foobar').should be_true
     end
-  end
 
-  describe "constructing absolute URIs" do
+    it "should be able to look up a relative URI when passed an IMW::Resource" do
+      @metadata.describes?(IMW.open('foobar')).should be_true
+    end
 
-    before { @metadata = IMW::Metadata.new }
+    it "should be able to look up an absolute URI literally" do
+      @metadata.describes?('http://www.google.com').should be_true
+    end
+
+    it "should rightly fail to literally look up a URI it doesn't know about" do
+      @metadata.describes?('bungler').should be_false
+    end
     
-    it "should return the resource given without a base" do
-      @metadata.send(:absolute_uri, 'path/to/something').should == 'path/to/something'
+  end
+
+  describe "setting URLs" do
+    describe "without a base URL" do
+      it "should set 'foobar' to 'foobar'" do
+        @metadata['foobar'] = {'description' => 'bhaarg', 'fields' => ['a','b','c']}
+        @metadata.keys.should include('foobar')
+      end
+
+      it "should set '/a/b/c/foobar' to '/a/b/c/foobar'" do
+        @metadata['/a/b/c/foobar'] = {'description' => 'bhaarg', 'fields' => ['a','b','c']}
+        @metadata.keys.should include('/a/b/c/foobar')
+      end
+      
     end
 
-    it "should return the absolute URI with a base" do
-      path = File.join(IMWTest::TMP_DIR, 'metadata.yaml')
-      FileUtils.mkdir_p(path)
-      @metadata.base = path
-      @metadata.send(:absolute_uri, 'path/to/something').should == File.join(IMWTest::TMP_DIR, '/path/to/something')
+    describe "with a base URL" do
+      before do
+        FileUtils.mkdir_p('chimpo')
+        @metadata.base = File.join(IMWTest::TMP_DIR, 'chimpo')
+      end
+      
+      it "should set 'foobar' to '$base/foobar'" do
+        @metadata['foobar'] = {'description' => 'bhaarg', 'fields' => ['a','b','c']}
+        @metadata.keys.should include(File.join(IMWTest::TMP_DIR, 'chimpo', 'foobar'))
+      end
+
+      it "should set '/a/b/c/foobar' to '/a/b/c/foobar'" do
+        @metadata['/a/b/c/foobar'] = {'description' => 'bhaarg', 'fields' => ['a','b','c']}
+        @metadata.keys.should include('/a/b/c/foobar')
+      end
+      
     end
   end
-  
+
+  describe "matching URLs with a base" do
+
+    it "should raise an error when trying to use a base URI that doesn't exist" do
+      lambda { @metadata.base = 'chimpo' }.should raise_error(IMW::PathError)
+    end
+
+    it "should raise an error when trying to use a base URI that isn't a directory" do
+      IMW.open!('chimpo') { |f| f.write('a file') }
+      lambda { @metadata.base = 'chimpo' }.should raise_error(IMW::PathError)
+    end
+
+    it "should be able to look up a URI relative to its base" do
+      FileUtils.mkdir_p('chimpo')
+      @metadata.base = File.join(IMWTest::TMP_DIR, 'chimpo')
+      @metadata['foobar'] = {'description' => 'buzz', 'fields' => ['a','b', 'c']}
+      @metadata.describe?('foobar').should be_true
+      @metadata.describe?(IMW.open('foobar')).should be_true
+    end
+
+    it "should continue to be able to look up an absolute URI literally" do
+      @metadata.describes?('http://www.google.com').should be_true
+    end
+    
+  end
 end

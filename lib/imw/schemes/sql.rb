@@ -46,6 +46,18 @@ module IMW
           end
         end
 
+        # Return a summary of this database.
+        #
+        # Purposefully does not call +super+.
+        #
+        # @return [Hash]
+        def external_summary
+          {
+            :uri      => uri.to_s,
+            :database => database
+          }
+        end
+
         # The (cached) database connection for this resource.
         #
         # @return [DBI::DatabaseHandle]

@@ -11,12 +11,6 @@ module IMW
     # @abstract
     module Delimited
 
-      # Ensure that this delimited resource is described by a an
-      # ordered collection of flat fields.
-      def validate_schema!
-        raise IMW::SchemaError.new("#{self.class} resources must be described by an ordered set of flat fields") if schema.any?(&:nested?)
-      end
-
       # Default options to be passed to
       # FasterCSV[http://fastercsv.rubyforge.org/]; see its
       # documentation for more information.
@@ -24,7 +18,7 @@ module IMW
       # @return [Hash]
       def delimited_options
         @delimited_options ||= {
-          :headers        => schema && schema.map { |field| field['name'] }
+          :headers        => fields && fields.map { |field| field['name'] }
         }.merge(resource_options_compatible_with_faster_csv)
       end
 
@@ -68,7 +62,7 @@ module IMW
       # of this delimited data is a row of headers.
       #
       # @return [true, false]
-      def headers_in_first_line?
+      def fields_in_first_line?
         # grab the header and up to 10 body rows
         require 'fastercsv'
         copy  = FasterCSV.new(io, resource_options_compatible_with_faster_csv.merge(:headers => false))
@@ -93,15 +87,16 @@ module IMW
         determinant && determinant >= 0.05
       end
 
-      # If it seems like there are headers in the first line of this
-      # data then go ahead and use them to define a schema.
+      # If it seems like there are fields in the first line of this
+      # data then go ahead and use them to define this resource's
+      # fields.
       #
-      # Will overwrite a schema already present for this resource.
-      def guess_schema!
-        return unless headers_in_first_line?
+      # Will overwrite any fields already present for this resource.
+      def guess_fields!
+        return unless fields_in_first_line?
         copy                        = FasterCSV.new(io, resource_options_compatible_with_faster_csv.merge(:headers => false))
         names                       = (copy.shift || []) rescue []
-        self.schema                 = IMW::Metadata::Schema.new(names)
+        self.fields                 = names.map { |n| { 'name' => n } }
         delimited_options[:headers] = names
       end
 

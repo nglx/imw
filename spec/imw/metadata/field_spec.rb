@@ -3,17 +3,16 @@ require File.dirname(__FILE__) + "/../../spec_helper"
 describe IMW::Metadata::Field do
 
   describe "initializing" do
-    it "should parse a symbol or string into a hash" do
-      IMW::Metadata::Field.new(:foobar).should  == { :name => "foobar" }
-      IMW::Metadata::Field.new('foobar').should == { :name => 'foobar' }
+    it "should parse a string into a hash" do
+      IMW::Metadata::Field.new('foobar').should == { "name" => 'foobar' }
     end
 
     it "should raise an error on a Hash without a :name key" do
-      lambda { IMW::Metadata::Field.new(:foo => 'bar') }.should raise_error(IMW::ArgumentError)
+      lambda { IMW::Metadata::Field.new('foo' => 'bar') }.should raise_error(IMW::ArgumentError)
     end
 
     it "should accept a Hash with a :name key" do
-      data = { :name => :foobar, :title => "Bazbooz", :unit => "m" }
+      data = { 'name' => :foobar, 'title' => "Bazbooz", 'unit' => "m" }
       IMW::Metadata::Field.new(data).should == data
     end
 

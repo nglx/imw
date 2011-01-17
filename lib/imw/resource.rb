@@ -73,23 +73,20 @@ module IMW
     #
     # @param [String, Addressable::URI] uri
     # @param [Hash] options
-    # @option options [true, false] no_modules
     # @option options [String] mode the mode to open the resource in (will be ignored when inapplicable)
-    # @option options [IMW::Metadata::Record, Array] schema the schema of this resource
     # @return [IMW::Resource]
     def initialize uri, options={}
       self.uri              = uri
       self.resource_options = options
       self.mode             = options[:mode] || 'r'
-      self.schema           = options[:schema]   if options[:schema]
       extend_appropriately!(options)
     end
 
     # Provides resources with a wrapped Addressable::URI object.
     include IMW::Utils::HasURI
 
-    # Provides resources with a schema.
-    include IMW::Metadata::Schematized
+    # Provides resources with a summary, metadata, & schema.
+    include IMW::Metadata::HasSummary
     
     # Gives IMW::Resource instances with the ability to dynamically
     # extend themselves with modules chosen from a set of handlers

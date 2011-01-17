@@ -28,5 +28,4 @@ describe IMW::Schemes::S3 do
       end
     end
   end
-
 end

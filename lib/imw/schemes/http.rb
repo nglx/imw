@@ -35,7 +35,7 @@ module IMW
       def effective_basename
         (basename.blank? || basename =~ %r{^/*$}) ? "_index" : basename
       end
-
+      
       # Send a GET request to this resource's URI.
       #
       # If the response doesn't have HTTP code 2xx, a RestClient

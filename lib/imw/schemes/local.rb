@@ -71,6 +71,8 @@ module IMW
       # Defines methods for appropriate for a local file.
       module LocalFile
 
+        include IMW::Metadata::HasMetadata
+        
         # Is this resource a regular file?
         #
         # @return [true, false]
@@ -173,7 +175,7 @@ module IMW
         def snippet
           returning([]) do |snip|
             (io.read(1024) || '').bytes.each do |byte|
-                                        # CR            LF          SPACE            ~
+              # CR            LF          SPACE            ~
               snip << byte.chr if byte == 13 || byte == 10 || byte >= 32 && byte <= 126
             end
           end.join
@@ -206,18 +208,16 @@ module IMW
         # - basename
         # - size
         # - extension
-        # - snippet
-        def summary
-          data = {
-            :basename  => basename,
-            :size      => size,
-            :extension => extension,
-            :num_lines => num_lines
-          }
-          data[:snippet] = snippet if respond_to?(:snippet)
-          data[:schema]  = schema  if respond_to?(:schema)
-          data
+        # - num_lines
+        def external_summary
+          super().merge({
+                          :size      => size,
+                          :num_lines => num_lines
+                        })
         end
+
+
+        
 
         protected
         
@@ -231,7 +231,7 @@ module IMW
           @wc ||= begin
                     `wc #{path}`.chomp.strip.split.map(&:to_i)
                   rescue
-                    [0,0,0] # FIXME
+                    [nil,nil,nil] # FIXME
                   end
         end
 
@@ -388,44 +388,16 @@ module IMW
           end
         end
         
-        # Return a hash summarizing this directory with a key
-        # <tt>:contents</tt> containing an array of hashes summarizing
-        # this directories contents.
-        #
         # The directory summary includes the following information
-        # - basename
         # - size
         # - num_files
-        # - contents
         #
         # @return [Hash]
-        def summary
-          {
-            :basename  => basename,
-            :size      => size,
-            :num_files => contents.length,
-            :contents  => resources.map do |resource|
-              resource.guess_schema! if guess_schema? && resource.respond_to?(:guess_schema!)
-              resource_summary = resource.summary
-              resource_summary[:schema] = metadata[resource] if metadata && metadata.describe?(resource) # this should be handled by 'resources' method above
-              resource_summary
-            end
-          }
-        end
-
-        # Whether or not to have this directory's resources guess
-        # their schemas when none is provided.
-        #
-        # @return [true, false]
-        def guess_schema?
-          (!! @guess_schema)
-        end
-
-        # Force this directory's resources to guess at their schema.
-        #
-        # @return [true]
-        def guess_schema!
-          @guess_schema = true
+        def external_summary
+          super().merge({
+                          :size      => size,
+                          :num_files => contents.length,
+                        })
         end
 
       end

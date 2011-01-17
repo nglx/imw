@@ -43,26 +43,25 @@ module IMW
 
       # Return a summary of the +inputs+ to this Summarizer.
       #
-      # Delegates to the +summary+ method of each constituent
-      # IMW::Resource in +inputs+.
+      # Will swallow errors.
       #
       # @return [Array<Hash>]
       def summary
-        @summary ||= inputs.map do |input|
-          #input.guess_schema! if input.schema.nil? && input.respond_to?(:guess_schema!)
-          (input.respond_to?(:summary) ? input.summary : {}) rescue {}
+        @summary ||= summary! rescue []
+      end
+
+      # Return a summary of the +inputs+ to this summarizer.
+      # 
+      # Delegates to the +summary+ method of each constituent
+      # IMW::Resource in +inputs+.
+      #
+      # @return [Array]
+      def summary!
+        inputs.map do |input|
+          (input.respond_to?(:summary) ? input.summary : {})
         end
       end
-
-      # The metadata employed by this Summarizer.
-      #
-      # It can be set by setting <tt>options[:metadata]</tt>.
-      #
-      # @return [IMW::Metadata, nil]
-      def metadata
-        @metadata ||= options[:metadata] && IMW::Metadata.load(options[:metadata])
-      end
-
+      
       protected
       # Set new inputs for this summarizer.
       #

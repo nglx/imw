@@ -119,7 +119,7 @@ module IMW
 
     # Provides this dataset with DSL like methods to construct a
     # schema in an IMW file.
-    include IMW::Metadata::DSL
+    # include IMW::Metadata::DSL
 
   end
 end
