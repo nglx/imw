@@ -14,7 +14,7 @@ module IMW
       #
       # @return [Hash]
       def extension_counts
-        @extension_counts ||= returning({}) do |counts|
+        @extension_counts ||= {}.tap do |counts|
           resources.each do |resource|
             next if resource.is_directory?
             counts[resource.extension] = 0 unless counts.has_key?(resource.extension)
@@ -39,7 +39,7 @@ module IMW
       #
       # @return [Hash]
       def normalized_extension_counts
-        @normalized_extension_counts ||= returning({}) do |weighted|
+        @normalized_extension_counts ||= {}.tap do |weighted|
           num_files = resources.reject(&:is_directory?).length.to_f
           extension_counts.each_pair do |extension, count|
             weighted[extension] = count.to_f / num_files
@@ -51,7 +51,7 @@ module IMW
       #
       # @return [Hash]
       def extension_sizes
-        @extension_sizes ||= returning({}) do |sizes|
+        @extension_sizes ||= {}.tap do |sizes|
           resources.each do |resource|
             next if resource.is_directory?
             sizes[resource.extension] = 0 unless sizes.has_key?(resource.extension)            
@@ -80,7 +80,7 @@ module IMW
       #
       # @return [Hash]
       def normalized_extension_sizes
-        @normalized_extension_sizes ||= returning({}) do |weighted|
+        @normalized_extension_sizes ||= {}.tap do |weighted|
           extension_sizes.each_pair do |extension, size|
             weighted[extension] = size.to_f / total_size.to_f
           end

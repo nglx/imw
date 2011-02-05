@@ -1,5 +1,3 @@
-require 'imw/utils/extensions/hash'
-
 module IMW
 
   # IMW looks for configuration settings in the following places, in

@@ -75,7 +75,7 @@ module IMW
       # 
       def snippet
         require 'spreadsheet'
-        returning([]) do |snip|
+        [].tap do |snip|
           row_num = 1
           Spreadsheet.open(path).worksheets.each do |worksheet|
             worksheet.each do |row|

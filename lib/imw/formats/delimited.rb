@@ -105,7 +105,7 @@ module IMW
       # @return [Array<Array>]
       def snippet
         require 'fastercsv'
-        returning([]) do |rows|
+        [].tap do |rows|
           row_num = 1
           each do |row|
             break if row_num > 10
@@ -125,7 +125,7 @@ module IMW
       #
       # @return [Hash]
       def resource_options_compatible_with_faster_csv
-        @compatible_options ||= returning({}) do |compatible_options|
+        @compatible_options ||= {}.tap do |compatible_options|
           FASTER_CSV_OPTION_NAMES.each do |option_name|
             compatible_options[option_name] = resource_options[option_name] if resource_options.has_key?(option_name.to_sym)
           end

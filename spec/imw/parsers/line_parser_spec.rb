@@ -56,7 +56,7 @@ describe IMW::Parsers::LineParser do
       end
 
       it "should pass each hash to a block when given one" do
-        results = returning([]) do |array|
+        results = [].tap do |array|
           @parser.parse!(@file) do |hsh|
             hsh.delete(:id)
             array << hsh
@@ -78,7 +78,7 @@ describe IMW::Parsers::LineParser do
       
       it "should pass each object to a block when given one and defined with a class" do
         @parser.klass = OpenStruct
-        results = returning([]) do |array|
+        results = [].tap do |array|
           @parser.parse!(@file) do |obj|
             obj.genus = nil
             array << obj

@@ -100,7 +100,7 @@ module IMW
       #
       # @return [URI::Generic]
       def stripped_uri
-        uri_args = returning({}) do |args|
+        uri_args = {}.tap do |args|
           %w[scheme userinfo host port path].each do |method|
             args[method.to_sym] = respond_to?(method) ? send(method) : uri.send(method)
           end

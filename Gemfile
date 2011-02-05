@@ -1,6 +1,6 @@
 #!/usr/bin/env ruby
 source :gemcutter
-gem 'activesupport', '2.3.5', :require => 'active_support'
+gem 'activesupport', :require => 'active_support'
 gem 'addressable', :require => 'addressable/uri'
 gem 'uuidtools'
 gem 'rake'

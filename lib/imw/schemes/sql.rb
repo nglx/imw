@@ -77,7 +77,7 @@ module IMW
         #
         # @return [Array<String>]
         def tables
-          returning([]) do |table_names|
+          [].tap do |table_names|
             execute("SHOW TABLES") do |row|
               table_names << row.first
             end

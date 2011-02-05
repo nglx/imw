@@ -56,7 +56,7 @@ module IMW
 
       def parse_line line
         match_data = regexp.match(line.chomp)
-        returning({}) do |hsh|
+        {}.tap do |hsh|
           if match_data
             match_data.captures.each_with_index do |capture, index|
               hsh[fields[index]] = capture

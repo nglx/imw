@@ -202,7 +202,7 @@ module IMW
       # @yield [String] each line of the file
       # @return [Array] the result of the block on each line
       def map &block
-        returning([]) do |output|
+        [].tap do |output|
           HDFS.fs(:cat, path) do |line|
             output << block.call(line)
           end
@@ -219,7 +219,7 @@ module IMW
       #
       # @return [Array<String>]
       def contents
-        returning([]) do |paths|
+        [].tap do |paths|
           HDFS.fs(:ls, path) do |line|
             next if line =~ /^Found.*items$/
             paths << line.split.last
