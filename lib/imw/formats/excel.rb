@@ -76,14 +76,21 @@ module IMW
       def snippet
         require 'spreadsheet'
         [].tap do |snip|
-          row_num = 1
+          rows_sampled = 0
           Spreadsheet.open(path).worksheets.each do |worksheet|
             worksheet.each do |row|
-              break if row_num > 10
-              snip << row.to_a
-              row_num += 1
+              begin
+                break if rows_sampled > 100
+                row_size = row.size.to_f
+                if (row.reject(&:blank?).size.to_f / row_size) > 0.5
+                  snip << row.to_a
+                  rows_sampled += 1
+                end
+              rescue => e
+                next
+              end
             end
-            break if row_num > 10
+            break if rows_sampled > 10
           end
         end
       end

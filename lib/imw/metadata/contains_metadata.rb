@@ -27,7 +27,7 @@
       #
       # @return [String, nil]
       def default_metadata_uri
-        contents.detect { |path| path =~ /(icss|metadata).*\.(ya?ml|json)$/i } || File.join(path, "#{basename}.icss.yaml")
+        contents.detect { |path| path =~ /metadata.*\.(ya?ml|json)$/i } || File.join(path, "#{basename}.metadata.yaml")
       end
 
       # Return the metadata for this resource if it exists.

@@ -106,11 +106,21 @@ module IMW
       def snippet
         require 'fastercsv'
         [].tap do |rows|
-          row_num = 1
-          each do |row|
-            break if row_num > 10
-            rows << row.size.times.map { |index| row[index] }
-            row_num += 1
+          rows_sampled = 0
+          begin
+            each do |row|
+              begin
+                break if rows_sampled > 100
+                row_size = row.size.to_f
+                if (row.reject(&:blank?).size.to_f / row_size) >= 0.5
+                  rows << row.size.times.map { |index| row[index] }
+                  rows_sampled += 1
+                end
+              rescue => e
+                next
+              end
+            end
+          rescue => e
           end
         end
       end

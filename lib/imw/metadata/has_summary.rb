@@ -20,10 +20,16 @@ module IMW
       # @return [Hash]
       def summary
         return @summary if @summary
-        @summary            = external_summary
-        @summary[:schema]   = schema                   if respond_to?(:schema)
-        @summary[:contents] = resources.map(&:summary) if respond_to?(:resources)
-        @summary
+        @summary = {}
+        begin
+          @summary.merge!(external_summary)
+          @summary[:schema]   = schema                   if respond_to?(:schema)
+          @summary[:contents] = resources.map(&:summary) if respond_to?(:resources)
+          @summary
+        rescue => e
+          # IMW.warn "Error in producing summary for #{self}: #{e.class} -- #{e.message}"
+          return @summary
+        end
       end
 
       # Return information (usually scheme-dependent) on how this

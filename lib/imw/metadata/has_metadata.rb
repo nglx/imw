@@ -24,19 +24,24 @@ module IMW
       # @return [Hash]
       def schema
         return @schema if @schema
-        @schema             = IMW::Metadata::Schema.new
+        @schema = IMW::Metadata::Schema.new
         @schema[:type]      = "record"
         @schema[:namespace] = "schema.imw.resource"
-        @schema[:name]      = (basename || '')
-        @schema[:doc]       = description
-        @schema[:fields]    = fields
-        
-        @schema[:non_avro ] = {}
-        @schema[:non_avro][:snippet]      = snippet      if respond_to?(:snippet)
-        @schema[:non_avro][:record_count] = record_count if respond_to?(:record_count)
-        @schema
+        @schema[:name]      = (basename || '')        
+        begin
+          @schema[:doc]       = description
+          @schema[:fields]    = fields
+          
+          @schema[:non_avro ] = {}
+          @schema[:non_avro][:snippet]      = snippet      if respond_to?(:snippet) rescue nil
+          @schema[:non_avro][:record_count] = record_count if respond_to?(:record_count)
+          @schema
+        rescue => e
+          $stdout.puts "Error in producing schema for #{self}: #{e.class} -- #{e.message}"
+          return @schema
+        end
       end
-
+      
       # Return the metadata object that contains metadata for this
       # resource.
       #
