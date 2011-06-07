@@ -1,0 +1,3 @@
+h2. Infinite Monkey Wrench
+
+Starting from scratch, implementing only what is necessary and useful, making sure all code is testable and extensible.
