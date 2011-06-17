@@ -47,6 +47,10 @@ describe "IMW::Resource" do
     end
   end
 
+  it "should read a Resource and return a string" do
+    Resource
+  end
+
   context "A Resource instance" do
     before :each do
       @uri = "test.csv"
