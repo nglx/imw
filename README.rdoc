@@ -1,3 +1,5 @@
+= Deprecated
+
 = What is the Infinite Monkeywrench?
 
 The Infinite Monkeywrench (IMW) is a Ruby frameworks to simplify the
