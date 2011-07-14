@@ -1,8 +1,9 @@
 require 'imw/error'
 require 'imw/uri'
-require 'imw/recordizer'
 
 module IMW
+
+  autoload :Recordizer, 'imw/recordizer'
 
   class Resource
 
