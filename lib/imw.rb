@@ -1,7 +1,11 @@
 require 'rubygems'
 require 'imw/utils'
+require 'imw/error'
+require 'imw/uri'
 
 module IMW
+
+  autoload :Recordizer,      'imw/recordizer'
   autoload :Resource,        'imw/resource'
   autoload :Schemes,         'imw/schemes'
   autoload :Formats,         'imw/formats'
@@ -15,12 +19,35 @@ module IMW
       options[:skip_modules] ||= (options[:without] || [])
       resource = IMW::Resource.new(obj, options)
     end
-    if block_given?
-      yield resource
-      resource.close
-    else
-      resource
+  end
+
+  class Resource
+
+    attr_reader :uri
+
+    def initialize(uri, mode='r')
+      raise FileModeError.new("'#{mode}' is not a valid access mode") unless valid_modes.include? mode
+      @uri = Uri.new(uri)
     end
+
+    def self.open(uri, mode='r', &blk)
+      resource = Resource.new(uri, mode)
+      if block_given?
+        yield resource
+      else
+        return resource
+      end
+    end
+
+    def self.exists? resource
+      true
+    end
+
+    private
+    def valid_modes
+      %w[ r w a ]
+    end
+
   end
 
 end

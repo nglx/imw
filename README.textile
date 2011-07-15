@@ -1,0 +1,21 @@
+h2. Infinite Monkey Wrench
+
+Starting from scratch, implementing only what is necessary and useful, making sure all code is testable and extensible.
+
+h2. Do Want
+
+* Be able to open any URI dynamically, and understand the data in a correct way.
+* Be able to open a URI and recordize the data given a schema.
+* Be able to write out to a URI dynamically, recordizing with an optional modifier.
+
+<pre><code>Would like implementation to appear as follows:
+my_record_reader = IMW::Reader.new(:my_schema)
+my_record_writer = IMW::Writer.new("path/to/output", :format)
+my_record_reader.open("uri/encoded/path/to/data") do |data|
+  # do stuff to data
+  my_record_writer.write(data)
+end
+</code></pre>
+
+
+
