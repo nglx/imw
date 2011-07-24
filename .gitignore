@@ -16,3 +16,6 @@ pkg/*
 tags
 .yardoc/*
 */.yardoc/*
+.vendor
+.bundle
+Gemfile.lock
