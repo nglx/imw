@@ -30,13 +30,12 @@ module IMW
       end
 
       def munge(buf)
-        @consumers = self.class.consumers.map(&:dup)
         max_lines.times do
           self._lines << (line = buf.shift)
           break if buf.empty?
           res = run_consumers(line, buf)
           if res == :stop then buf.unshift(line) ; break ; end
-          next  if res == :skip
+          if res == :skip then next ; end
           yield(line) if block_given?
         end
         self
@@ -85,7 +84,6 @@ module IMW
         @num_seen += 1
         blk = on_match.is_a?(Symbol) ? obj.method(on_match) : on_match
         obj.instance_exec(mt, buf, &blk) if blk
-        yield(mt)
       end
     end
   end
