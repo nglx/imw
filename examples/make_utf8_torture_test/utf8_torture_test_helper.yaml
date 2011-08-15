@@ -1,0 +1,275 @@
+--- 
+  - :name: Some correct UTF-8 text
+    :tests: 
+      - :name: the Greek word 'kosme' ()
+        :hex: 
+        :str: "\xce\xba\xe1\xbd\xb9\xcf\x83\xce\xbc\xce\xb5"
+      - :str: "I\xc3\xb1t\xc3\xabrn\xc3\xa2ti\xc3\xb4n\xc3\xa0liz\xc3\xa6ti\xc3\xb8n"
+      - :str: "I\xc3\xb1t\xc3\xabrn\xc3\xa2ti\xc3\xb4n\xc3\xa0liz\xc3\xa6ti\xc3\xb8n"
+  - :name: Boundary condition test cases
+    :sections: 
+      - :name: First possible sequence of a certain length
+        :tests: 
+          - :name: 1 byte   (U-00000000)
+            :hex: 
+            :str: "\x00"
+          - :name: 2 bytes  (U-00000080)
+            :hex: 
+            :str: "\xc2\x80"
+          - :name: 3 bytes  (U-00000800)
+            :hex: 
+            :str: "\xe0\xa0\x80"
+          - :name: 4 bytes  (U-00010000)
+            :hex: 
+            :str: "\xf0\x90\x80\x80"
+          - :name: 5 bytes  (U-00200000)
+            :hex: 
+            :str: "\xf8\x88\x80\x80\x80"
+          - :name: 6 bytes  (U-04000000)
+            :hex: 
+            :str: "\xfc\x84\x80\x80\x80\x80"
+      - :name: Last possible sequence of a certain length
+        :tests: 
+          - :name: 1 byte   (U-0000007F)
+            :hex: 
+            :str: 
+          - :name: 2 bytes  (U-000007FF)
+            :hex: 
+            :str: "\xdf\xbf"
+          - :name: 3 bytes  (U-0000FFFF)
+            :hex: 
+            :str: "\xef\xbf\xbf"
+          - :name: 4 bytes  (U-001FFFFF)
+            :hex: 
+            :str: "\xf7\xbf\xbf\xbf"
+          - :name: 5 bytes  (U-03FFFFFF)
+            :hex: 
+            :str: "\xfb\xbf\xbf\xbf\xbf"
+          - :name: 6 bytes  (U-7FFFFFFF)
+            :hex: 
+            :str: "\xfd\xbf\xbf\xbf\xbf\xbf"
+      - :name: Other boundary conditions
+        :tests: 
+          - :name: "Other boundary conditions ed 9f bf "
+            :hex: "ed 9f bf "
+            :str: "\xed\x9f\xbf"
+          - :name: "Other boundary conditions ee 80 80 "
+            :hex: "ee 80 80 "
+            :str: "\xee\x80\x80"
+          - :name: "Other boundary conditions ef bf bd "
+            :hex: "ef bf bd "
+            :str: "\xef\xbf\xbd"
+          - :name: "Other boundary conditions f4 8f bf bf "
+            :hex: "f4 8f bf bf "
+            :str: "\xf4\x8f\xbf\xbf"
+          - :name: "Other boundary conditions f4 90 80 80 "
+            :hex: "f4 90 80 80 "
+            :str: "\xf4\x90\x80\x80"
+  - :name: Malformed sequences
+    :sections: 
+      - :name: Unexpected continuation bytes
+        :tests: 
+          - :name: First continuation byte  0x80
+            :hex: "0x80"
+            :str: "\x80"
+          - :name: Last  continuation byte  0xbf
+            :hex: 0xbf
+            :str: "\xbf"
+          - :name: 2 continuation bytes ()
+            :hex: 
+            :str: "\x80\xbf"
+          - :name: 3 continuation bytes ()
+            :hex: 
+            :str: "\x80\xbf\x80"
+          - :name: 4 continuation bytes ()
+            :hex: 
+            :str: "\x80\xbf\x80\xbf"
+          - :name: 5 continuation bytes ()
+            :hex: 
+            :str: "\x80\xbf\x80\xbf\x80"
+          - :name: 6 continuation bytes ()
+            :hex: 
+            :str: "\x80\xbf\x80\xbf\x80\xbf"
+          - :name: 7 continuation bytes ()
+            :hex: 
+            :str: "\x80\xbf\x80\xbf\x80\xbf\x80"
+          - :name: Sequence of all 64 possible continuation bytes 0x80-0xbf
+            :hex: 0x80-0xbf
+            :str: "\x80\x81\x82\x83\x84\x85\x86\x87\x88\x89\x8a\x8b\x8c\x8d\x8e\x8f\x90\x91\x92\x93\x94\x95\x96\x97\x98\x99\x9a\x9b\x9c\x9d\x9e\x9f\xa0\xa1\xa2\xa3\xa4\xa5\xa6\xa7\xa8\xa9\xaa\xab\xac\xad\xae\xaf\xb0\xb1\xb2\xb3\xb4\xb5\xb6\xb7\xb8\xb9\xba\xbb\xbc\xbd\xbe\xbf"
+      - :name: Lonely start characters
+        :tests: 
+          - :name: All 32 first bytes of 2-byte sequenceseach followed by a space character 0xc0-0xdf
+            :hex: 0xc0-0xdf
+            :str: "\xc0 \xc1 \xc2 \xc3 \xc4 \xc5 \xc6 \xc7 \xc8 \xc9 \xca \xcb \xcc \xcd \xce \xcf\xd0 \xd1 \xd2 \xd3 \xd4 \xd5 \xd6 \xd7 \xd8 \xd9 \xda \xdb \xdc \xdd \xde \xdf "
+          - :name: All 16 first bytes of 3-byte sequenceseach followed by a space character 0xe0-0xef
+            :hex: 0xe0-0xef
+            :str: "\xe0 \xe1 \xe2 \xe3 \xe4 \xe5 \xe6 \xe7 \xe8 \xe9 \xea \xeb \xec \xed \xee \xef "
+          - :name: All 8 first bytes of 4-byte sequenceseach followed by a space character 0xf0-0xf7
+            :hex: 0xf0-0xf7
+            :str: "\xf0 \xf1 \xf2 \xf3 \xf4 \xf5 \xf6 \xf7 "
+          - :name: All 4 first bytes of 5-byte sequenceseach followed by a space character 0xf8-0xfb
+            :hex: 0xf8-0xfb
+            :str: "\xf8 \xf9 \xfa \xfb "
+          - :name: All 2 first bytes of 6-byte sequenceseach followed by a space character 0xfc-0xfd
+            :hex: 0xfc-0xfd
+            :str: "\xfc \xfd "
+      - :name: Sequences with last continuation byte missing
+        :tests: 
+          - :name: 2-byte sequence with last byte missing  (U+0000)
+            :hex: 
+            :str: "\xc0"
+          - :name: 3-byte sequence with last byte missing  (U+0000)
+            :hex: 
+            :str: "\xe0\x80"
+          - :name: 4-byte sequence with last byte missing  (U+0000)
+            :hex: 
+            :str: "\xf0\x80\x80"
+          - :name: 5-byte sequence with last byte missing  (U+0000)
+            :hex: 
+            :str: "\xf8\x80\x80\x80"
+          - :name: 6-byte sequence with last byte missing  (U+0000)
+            :hex: 
+            :str: "\xfc\x80\x80\x80\x80"
+          - :name: 2-byte sequence with last byte missing  (U-000007FF)
+            :hex: 
+            :str: "\xdf"
+          - :name: 3-byte sequence with last byte missing  (U-0000FFFF)
+            :hex: 
+            :str: "\xef\xbf"
+          - :name: 4-byte sequence with last byte missing  (U-001FFFFF)
+            :hex: 
+            :str: "\xf7\xbf\xbf"
+          - :name: 5-byte sequence with last byte missing  (U-03FFFFFF)
+            :hex: 
+            :str: "\xfb\xbf\xbf\xbf"
+          - :name: 6-byte sequence with last byte missing  (U-7FFFFFFF)
+            :hex: 
+            :str: "\xfd\xbf\xbf\xbf\xbf"
+      - :name: Concatenation of incomplete sequences
+        :tests: 
+          - :name: Concatenation of incomplete sequences ()
+            :hex: 
+            :str: "\xc0\xe0\x80\xf0\x80\x80\xf8\x80\x80\x80\xfc\x80\x80\x80\x80\xdf\xef\xbf\xf7\xbf\xbf\xfb\xbf\xbf\xbf\xfd\xbf\xbf\xbf\xbf"
+      - :name: Impossible bytes
+        :tests: 
+          - :name: "Impossible bytes fe "
+            :hex: "fe "
+            :str: "\xfe"
+          - :name: "Impossible bytes ff "
+            :hex: "ff "
+            :str: "\xff"
+          - :name: "Impossible bytes fe fe ff ff "
+            :hex: "fe fe ff ff "
+            :str: "\xfe\xfe\xff\xff"
+  - :name: Overlong sequences
+    :sections: 
+      - :name: Examples of an overlong ASCII character
+        :tests: 
+          - :name: "Examples of an overlong ASCII character c0 af "
+            :hex: "c0 af "
+            :str: "\xc0\xaf"
+          - :name: "Examples of an overlong ASCII character e0 80 af "
+            :hex: "e0 80 af "
+            :str: "\xe0\x80\xaf"
+          - :name: "Examples of an overlong ASCII character f0 80 80 af "
+            :hex: "f0 80 80 af "
+            :str: "\xf0\x80\x80\xaf"
+          - :name: "Examples of an overlong ASCII character f8 80 80 80 af "
+            :hex: "f8 80 80 80 af "
+            :str: "\xf8\x80\x80\x80\xaf"
+          - :name: "Examples of an overlong ASCII character fc 80 80 80 80 af "
+            :hex: "fc 80 80 80 80 af "
+            :str: "\xfc\x80\x80\x80\x80\xaf"
+      - :name: Maximum overlong sequences
+        :tests: 
+          - :name: "Maximum overlong sequences c1 bf "
+            :hex: "c1 bf "
+            :str: "\xc1\xbf"
+          - :name: "Maximum overlong sequences e0 9f bf "
+            :hex: "e0 9f bf "
+            :str: "\xe0\x9f\xbf"
+          - :name: "Maximum overlong sequences f0 8f bf bf "
+            :hex: "f0 8f bf bf "
+            :str: "\xf0\x8f\xbf\xbf"
+          - :name: "Maximum overlong sequences f8 87 bf bf bf "
+            :hex: "f8 87 bf bf bf "
+            :str: "\xf8\x87\xbf\xbf\xbf"
+          - :name: "Maximum overlong sequences fc 83 bf bf bf bf "
+            :hex: "fc 83 bf bf bf bf "
+            :str: "\xfc\x83\xbf\xbf\xbf\xbf"
+      - :name: Overlong representation of the NUL character
+        :tests: 
+          - :name: "Overlong representation of the NUL character c0 80 "
+            :hex: "c0 80 "
+            :str: "\xc0\x80"
+          - :name: "Overlong representation of the NUL character e0 80 80 "
+            :hex: "e0 80 80 "
+            :str: "\xe0\x80\x80"
+          - :name: "Overlong representation of the NUL character f0 80 80 80 "
+            :hex: "f0 80 80 80 "
+            :str: "\xf0\x80\x80\x80"
+          - :name: "Overlong representation of the NUL character f8 80 80 80 80 "
+            :hex: "f8 80 80 80 80 "
+            :str: "\xf8\x80\x80\x80\x80"
+          - :name: "Overlong representation of the NUL character fc 80 80 80 80 80 "
+            :hex: "fc 80 80 80 80 80 "
+            :str: "\xfc\x80\x80\x80\x80\x80"
+  - :name: Illegal code positions
+    :sections: 
+      - :name: Single UTF-16 surrogates
+        :tests: 
+          - :name: "Single UTF-16 surrogates ed a0 80 "
+            :hex: "ed a0 80 "
+            :str: "\xed\xa0\x80"
+          - :name: "Single UTF-16 surrogates ed ad bf "
+            :hex: "ed ad bf "
+            :str: "\xed\xad\xbf"
+          - :name: "Single UTF-16 surrogates ed ae 80 "
+            :hex: "ed ae 80 "
+            :str: "\xed\xae\x80"
+          - :name: "Single UTF-16 surrogates ed af bf "
+            :hex: "ed af bf "
+            :str: "\xed\xaf\xbf"
+          - :name: "Single UTF-16 surrogates ed b0 80 "
+            :hex: "ed b0 80 "
+            :str: "\xed\xb0\x80"
+          - :name: "Single UTF-16 surrogates ed be 80 "
+            :hex: "ed be 80 "
+            :str: "\xed\xbe\x80"
+          - :name: "Single UTF-16 surrogates ed bf bf "
+            :hex: "ed bf bf "
+            :str: "\xed\xbf\xbf"
+      - :name: Paired UTF-16 surrogates
+        :tests: 
+          - :name: "Paired UTF-16 surrogates ed a0 80 ed b0 80 "
+            :hex: "ed a0 80 ed b0 80 "
+            :str: "\xed\xa0\x80\xed\xb0\x80"
+          - :name: "Paired UTF-16 surrogates ed a0 80 ed bf bf "
+            :hex: "ed a0 80 ed bf bf "
+            :str: "\xed\xa0\x80\xed\xbf\xbf"
+          - :name: "Paired UTF-16 surrogates ed ad bf ed b0 80 "
+            :hex: "ed ad bf ed b0 80 "
+            :str: "\xed\xad\xbf\xed\xb0\x80"
+          - :name: "Paired UTF-16 surrogates ed ad bf ed bf bf "
+            :hex: "ed ad bf ed bf bf "
+            :str: "\xed\xad\xbf\xed\xbf\xbf"
+          - :name: "Paired UTF-16 surrogates ed ae 80 ed b0 80 "
+            :hex: "ed ae 80 ed b0 80 "
+            :str: "\xed\xae\x80\xed\xb0\x80"
+          - :name: "Paired UTF-16 surrogates ed ae 80 ed bf bf "
+            :hex: "ed ae 80 ed bf bf "
+            :str: "\xed\xae\x80\xed\xbf\xbf"
+          - :name: "Paired UTF-16 surrogates ed af bf ed b0 80 "
+            :hex: "ed af bf ed b0 80 "
+            :str: "\xed\xaf\xbf\xed\xb0\x80"
+          - :name: "Paired UTF-16 surrogates ed af bf ed bf bf "
+            :hex: "ed af bf ed bf bf "
+            :str: "\xed\xaf\xbf\xed\xbf\xbf"
+      - :name: Other illegal code positions
+        :tests: 
+          - :name: "Other illegal code positions ef bf be "
+            :hex: "ef bf be "
+            :str: "\xef\xbf\xbe"
+          - :name: "Other illegal code positions ef bf bf "
+            :hex: "ef bf bf "
+            :str: "\xef\xbf\xbf"
