@@ -9,15 +9,17 @@ class SexpistolParser < StringScanner
     super(string)
   end
 
+  TOKEN_OPEN_PAREN  = '('
+  TOKEN_CLOSE_PAREN = ')'
+  TOKEN_APOSTROPHE  = :"'"
+
   def parse
     exp = []
     while true
       case fetch_token
-        when '('
-          exp << parse
-        when ')'
-          break
-        when :"'"
+        when TOKEN_OPEN_PAREN   then exp << parse
+        when TOKEN_CLOSE_PAREN  then break
+        when TOKEN_APOSTROPHE
           case fetch_token
           when '(' then exp << [:quote].concat([parse])
           else exp << [:quote, @token]
@@ -31,31 +33,25 @@ class SexpistolParser < StringScanner
     exp
   end
 
+  RE_PARENS         = /[\(\)]/
+  RE_STRING_LITERAL = /"([^"\\]|\\.)*"/
+  RE_FLOAT          = /[\-\+]? [0-9]+ ((e[0-9]+) | (\.[0-9]+(e[0-9]+)?))/x
+  RE_INTEGER        = /[\-\+]?[0-9]+/
+  RE_APOSTROPHE     = /'/
+  RE_SYMBOL         = /[^\(\)\s]+/
+
   def fetch_token
     skip(/\s+/)
     return nil if(eos?)
 
     @token =
-    # Match parentheses
-    if scan(/[\(\)]/)
-      matched
-    # Match a string literal
-    elsif scan(/"([^"\\]|\\.)*"/)
-      eval(matched)
-    # Match a float literal
-    elsif scan(/[\-\+]? [0-9]+ ((e[0-9]+) | (\.[0-9]+(e[0-9]+)?))/x)
-      matched.to_f
-    # Match an integer literal
-    elsif scan(/[\-\+]?[0-9]+/)
-      matched.to_i
-    # Match a comma (for comma quoting)
-    elsif scan(/'/)
-      matched.to_sym
-    # Match a symbol
-    elsif scan(/[^\(\)\s]+/)
-      matched.to_sym
-    # If we've gotten here then we have an invalid token
-    else
+    if    scan(RE_PARENS)         then matched
+    elsif scan(RE_STRING_LITERAL) then eval(matched)
+    elsif scan(RE_FLOAT)          then matched.to_f
+    elsif scan(RE_INTEGER)        then matched.to_i
+    elsif scan(RE_APOSTROPHE)     then matched.to_sym
+    elsif scan(RE_SYMBOL)         then matched.to_sym
+    else     # If we've gotten here then we have an invalid token
       near = scan %r{.{0,20}}
       raise "Invalid character at position #{pos} near '#{near}'."
     end
